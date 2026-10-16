@@ -6,6 +6,17 @@ release
 
 ivy
 
+# downloaded and unpacked build dependencies
+cache/bin
+cache/conf
+cache/ext
+cache/javafx-sdk-*
+cache/lib
+cache/openjdk-*.tar.gz
+cache/openjdk-*.zip
+cache/openjfx-*.zip
+cache/OpenJDK*-jre_*.tar.gz
+
 QuickLook
 
 *.txt

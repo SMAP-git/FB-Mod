@@ -1,6 +1,5 @@
 package net.filebot.archive;
 
-import static java.util.Arrays.*;
 import static net.filebot.MediaTypes.*;
 import static net.filebot.util.StringUtilities.*;
 
@@ -13,18 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.VFS;
-
 import net.filebot.util.FileUtilities.ExtensionFileFilter;
 import net.filebot.util.SystemProperty;
 import net.filebot.vfs.FileInfo;
-import net.sf.sevenzipjbinding.ArchiveFormat;
 
 public class Archive implements Closeable {
 
 	public static Extractor getExtractor() {
-		return SystemProperty.of("net.filebot.Archive.extractor", Extractor::valueOf, Extractor.SevenZipNativeBindings).get();
+		return SystemProperty.of("net.filebot.Archive.extractor", Extractor::valueOf, Extractor.SevenZipExecutable).get();
 	}
 
 	public static enum Extractor {
@@ -32,28 +27,14 @@ public class Archive implements Closeable {
 		SevenZipNativeBindings, SevenZipExecutable, ApacheVFS;
 
 		public ArchiveExtractor newInstance(File archive) throws Exception {
-			switch (this) {
-			case SevenZipNativeBindings:
-				return new SevenZipNativeBindings(archive);
-			case SevenZipExecutable:
-				return new SevenZipExecutable(archive);
-			default:
-				return new ApacheVFS(archive);
+			if (this != SevenZipExecutable) {
+				net.filebot.Logging.debug.warning("Archive extractor " + this + " has been replaced by SevenZipExecutable.");
 			}
+			return new SevenZipExecutable(archive);
 		}
 
 		public String[] getSupportedTypes() {
-			switch (this) {
-			case SevenZipNativeBindings:
-			case SevenZipExecutable:
-				return stream(ArchiveFormat.values()).map(ArchiveFormat::getMethodName).toArray(String[]::new);
-			default:
-				try {
-					return VFS.getManager().getSchemes();
-				} catch (FileSystemException e) {
-					throw new IllegalStateException(e);
-				}
-			}
+			return new String[] { "7z", "zip", "rar", "tar", "gz", "bz2", "xz", "lzma", "z", "cab", "iso", "arj", "lzh", "wim", "rpm", "deb", "cpio", "chm", "compound", "nsis", "split", "udf", "xar" };
 		}
 	}
 
@@ -87,7 +68,7 @@ public class Archive implements Closeable {
 	}
 
 	public static String[] getArchiveTypes() {
-		return Stream.of(ARCHIVE_FILES.extensions(), Extractor.SevenZipNativeBindings.getSupportedTypes()).flatMap(Stream::of).distinct().toArray(String[]::new);
+		return Stream.of(ARCHIVE_FILES.extensions(), Extractor.SevenZipExecutable.getSupportedTypes()).flatMap(Stream::of).distinct().toArray(String[]::new);
 	}
 
 	private static final Pattern multiPartIndex = Pattern.compile("[.][0-9]{3}$");

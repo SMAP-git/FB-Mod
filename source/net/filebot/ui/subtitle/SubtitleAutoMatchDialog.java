@@ -125,7 +125,7 @@ class SubtitleAutoMatchDialog extends JDialog {
 		table.setRowHeight(24);
 		table.setIntercellSpacing(new Dimension(5, 5));
 
-		table.setBackground(Color.white);
+		table.setBackground(net.filebot.ui.Theme.isDark() ? javax.swing.UIManager.getColor("nimbusLightBackground") : Color.white);
 		table.setAutoCreateRowSorter(true);
 		table.setFillsViewportHeight(true);
 

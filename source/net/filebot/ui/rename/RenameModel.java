@@ -28,7 +28,10 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
 import net.filebot.similarity.Match;
+import net.filebot.subtitle.SubtitleUtilities;
 import net.filebot.util.ui.SwingUI;
+import net.filebot.web.Episode;
+import net.filebot.web.Movie;
 
 public class RenameModel extends MatchModel<Object, File> {
 
@@ -331,12 +334,20 @@ public class RenameModel extends MatchModel<Object, File> {
 		}
 
 		public String preview() {
-			return formatter.preview(match).trim();
+			return appendSubtitleLanguage(formatter.preview(match).trim());
 		}
 
 		@Override
 		protected String doInBackground() throws Exception {
-			return formatter.format(match, extension, context).trim();
+			return appendSubtitleLanguage(formatter.format(match, extension, context).trim());
+		}
+
+		private String appendSubtitleLanguage(String name) {
+			if (formatter instanceof ExpressionFormatter || !(match.getValue() instanceof Episode || match.getValue() instanceof Movie)) {
+				return name;
+			}
+			String language = SubtitleUtilities.getSubtitleLanguageName(match.getCandidate());
+			return language == null ? name : name + "." + language;
 		}
 
 		@Override

@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Windows portable",
+			"type": "shell",
+			"command": "./build-windows-portable.sh",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build Linux portable",
+			"type": "shell",
+			"command": "bash build-linux-portable.sh",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

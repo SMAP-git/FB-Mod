@@ -311,6 +311,34 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 		}).sorted(Artwork.RATING_ORDER).collect(toList());
 	}
 
+	public URL getPoster(String type, int id, Locale locale) throws Exception {
+		return resolveImage(getString(request(type + "/" + id, emptyMap(), locale), "poster_path"));
+	}
+
+	public SearchResultPreview getPreview(String type, int id, Locale locale) throws Exception {
+		Object response = request(type + "/" + id, emptyMap(), locale);
+
+		String posterPath = getString(response, "poster_path");
+		URL poster = null;
+		if (posterPath != null && !posterPath.isEmpty()) {
+			String mirror = getString(getMap(getConfiguration(), "images"), "secure_base_url");
+			poster = new URL(mirror + "w154" + posterPath);
+		}
+
+		String country = streamJsonObjects(response, "production_countries").map(it -> getString(it, "iso_3166_1")).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.joining(", "));
+		if (country.isEmpty()) {
+			country = String.join(", ", java.util.Arrays.stream(getArray(response, "origin_country")).map(Object::toString).toArray(String[]::new));
+		}
+
+		String date = getString(response, "release_date");
+		if (date == null) {
+			date = getString(response, "first_air_date");
+		}
+		String year = date != null && date.length() >= 4 ? date.substring(0, 4) : null;
+
+		return new SearchResultPreview(poster, country.isEmpty() ? null : country, getString(response, "overview"), year);
+	}
+
 	protected Object getConfiguration() throws Exception {
 		return request("configuration", emptyMap(), Locale.ROOT);
 	}

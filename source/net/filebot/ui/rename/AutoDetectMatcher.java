@@ -32,7 +32,7 @@ import net.filebot.web.SortOrder;
 class AutoDetectMatcher implements AutoCompleteMatcher {
 
 	private AutoCompleteMatcher movie = new MovieMatcher(TheMovieDB);
-	private AutoCompleteMatcher episode = new EpisodeListMatcher(TheTVDB, false);
+	private AutoCompleteMatcher episode = new EpisodeListMatcher(TheMovieDB_TV, false);
 	private AutoCompleteMatcher anime = new EpisodeListMatcher(AniDB, true);
 	private AutoCompleteMatcher music = new MusicMatcher(MediaInfoID3, AcoustID);
 

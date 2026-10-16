@@ -8,7 +8,9 @@
 		<dependency rev="2.33" org="args4j" name="args4j" />
 		<dependency rev="2.10.5" org="net.sf.ehcache" name="ehcache" />
 		<dependency rev="27.0.1-jre" org="com.google.guava" name="guava" />
-		<dependency rev="2.6.2" org="com.github.ben-manes.caffeine" name="caffeine" />
+		<dependency rev="2.6.2" org="com.github.ben-manes.caffeine" name="caffeine">
+			<exclude org="com.github.brianfrankcooper.ycsb" module="core" />
+		</dependency>
 		<dependency rev="4.1.1" org="com.github.mpkorstanje" name="simmetrics-core" />
 		<dependency rev="61.1" org="com.ibm.icu" name="icu4j" />
 		<dependency rev="1.11.3" org="org.jsoup" name="jsoup" />
@@ -20,12 +22,8 @@
 		<dependency rev="1.7.25" org="org.slf4j" name="slf4j-jdk14" />
 		<dependency rev="1.10.0" org="net.java.dev.glazedlists" name="glazedlists_java16" />
 		<dependency rev="5.2" org="com.miglayout" name="miglayout-swing" />
-		<dependency rev="2.2" org="org.apache.commons" name="commons-vfs2" />
-		<dependency rev="3.1.0" org="com.github.junrar" name="junrar" />
 		<dependency rev="3.0.0" org="com.fifesoft" name="rsyntaxtextarea" />
 		<dependency rev="3.0.0" org="com.fifesoft" name="autocomplete" />
-		<dependency rev="9.20-2.00beta" org="net.sf.sevenzipjbinding" name="sevenzipjbinding" />
-		<dependency rev="9.20-2.00beta" org="net.sf.sevenzipjbinding" name="sevenzipjbinding-all-platforms" />
 		<dependency rev="0.6" org="com.optimaize.languagedetector" name="language-detector" />
 		<dependency rev="1.2.1" org="com.dampcake" name="bencode" />
 		<dependency rev="0.6.7" org="one.util" name="streamex" />
@@ -53,7 +51,7 @@
 		<dependency rev="2.5.6" org="org.codehaus.groovy" name="groovy-groovydoc" />
 
 
-		<!-- Apache Ant -->
+		<!-- Build-time Apache Ant tasks (not shipped in the application) -->
 		<dependency rev="1.10.5" org="org.apache.ant" name="ant" />
 		<dependency rev="1.10.5" org="org.apache.ant" name="ant-launcher" />
 		<dependency rev="1.10.5" org="org.apache.ant" name="ant-commons-net" />
@@ -66,6 +64,7 @@
 
 
 		<!-- Build Tools -->
+		<dependency rev="4.13.2" org="junit" name="junit" />
 		<dependency rev="0.6" org="net.filebot" name="ant-spk" />
 		<dependency rev="1.6" org="org.vafer" name="jdeb" />
 	</dependencies>

@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import net.filebot.media.LocalDatasource;
 import net.filebot.similarity.MetricAvg;
+import net.filebot.similarity.SeriesNameMatcher;
 import net.filebot.web.AcoustIDClient;
 import net.filebot.web.AnidbClient;
 import net.filebot.web.Datasource;
@@ -60,11 +61,14 @@ public final class WebServices {
 	public static final AnidbClient AniDB = new AnidbClientWithLocalSearch(getApiKey("anidb"), 7);
 
 	// extended TheTVDB module with local search
-	public static final TheTVDBClientWithLocalSearch TheTVDB = new TheTVDBClientWithLocalSearch(getApiKey("thetvdb"));
+	public static final TheTVDBClientWithLocalSearch TheTVDB = new TheTVDBClientWithLocalSearch(
+			TheTVDBClient.isConfigured() ? TheTVDBClient.getConfiguredApiKey() : getApiKey("thetvdb"),
+			TheTVDBClient.getConfiguredPin());
 	public static final TMDbTVClient TheMovieDB_TV = new TMDbTVClient(TheMovieDB);
 
 	// subtitle sources
 	public static final OpenSubtitlesClient OpenSubtitles = new OpenSubtitlesClientWithLocalSearch(getApiKey("opensubtitles"), getApplicationVersion());
+	public static final net.filebot.web.OpenSubtitlesRestClient OpenSubtitlesCom = new net.filebot.web.OpenSubtitlesRestClient();
 	public static final ShooterSubtitles Shooter = new ShooterSubtitles();
 
 	// other sources
@@ -73,7 +77,7 @@ public final class WebServices {
 	public static final ID3Lookup MediaInfoID3 = new ID3Lookup();
 
 	public static Datasource[] getServices() {
-		return new Datasource[] { TheMovieDB, OMDb, TheTVDB, AniDB, TheMovieDB_TV, TVmaze, AcoustID, MediaInfoID3, LocalDatasource.EXIF, LocalDatasource.XATTR, LocalDatasource.FILE, OpenSubtitles, Shooter, FanartTV };
+		return new Datasource[] { TheMovieDB, OMDb, TheTVDB, AniDB, TheMovieDB_TV, TVmaze, AcoustID, MediaInfoID3, LocalDatasource.EXIF, LocalDatasource.XATTR, LocalDatasource.FILE, OpenSubtitlesCom, OpenSubtitles, Shooter, FanartTV };
 	}
 
 	public static MovieIdentificationService[] getMovieIdentificationServices() {
@@ -81,7 +85,9 @@ public final class WebServices {
 	}
 
 	public static EpisodeListProvider[] getEpisodeListProviders() {
-		return new EpisodeListProvider[] { TheTVDB, AniDB, TheMovieDB_TV, TVmaze };
+		return TheTVDBClient.isConfigured()
+				? new EpisodeListProvider[] { TheMovieDB_TV, TheTVDB, AniDB, TVmaze }
+				: new EpisodeListProvider[] { TheMovieDB_TV, AniDB, TVmaze };
 	}
 
 	public static MusicIdentificationService[] getMusicIdentificationServices() {
@@ -93,15 +99,15 @@ public final class WebServices {
 	}
 
 	public static SubtitleProvider[] getSubtitleProviders(Locale locale) {
-		return new SubtitleProvider[] { OpenSubtitles };
+		return new SubtitleProvider[] { OpenSubtitlesCom, OpenSubtitles };
 	}
 
 	public static VideoHashSubtitleService[] getVideoHashSubtitleServices(Locale locale) {
 		switch (locale.getLanguage()) {
 		case "zh":
-			return new VideoHashSubtitleService[] { OpenSubtitles, Shooter }; // special support for 射手网 for Chinese language subtitles
+			return new VideoHashSubtitleService[] { OpenSubtitlesCom, OpenSubtitles, Shooter }; // special support for 射手网 for Chinese language subtitles
 		default:
-			return new VideoHashSubtitleService[] { OpenSubtitles };
+			return new VideoHashSubtitleService[] { OpenSubtitlesCom, OpenSubtitles };
 		}
 	}
 
@@ -110,7 +116,7 @@ public final class WebServices {
 	}
 
 	public static EpisodeListProvider getEpisodeListProvider(String name) {
-		return getService(name, getEpisodeListProviders());
+		return getService(name, new EpisodeListProvider[] { TheMovieDB_TV, AniDB, TVmaze, TheTVDB });
 	}
 
 	public static MovieIdentificationService getMovieIdentificationService(String name) {
@@ -196,6 +202,10 @@ public final class WebServices {
 			super(apikey);
 		}
 
+		public TheTVDBClientWithLocalSearch(String apikey, String pin) {
+			super(apikey, pin);
+		}
+
 		// local TheTVDB search index
 		private final Resource<LocalSearch<SearchResult>> localIndex = Resource.lazy(() -> new LocalSearch<SearchResult>(releaseInfo.getTheTVDBIndex(), SearchResult::getEffectiveNames));
 
@@ -210,13 +220,14 @@ public final class WebServices {
 		@Override
 		public List<SearchResult> fetchSearchResult(String query, Locale locale) throws Exception {
 			// run local search and API search in parallel
-			Future<List<SearchResult>> apiSearch = requestThreadPool.submit(() -> TheTVDBClientWithLocalSearch.super.fetchSearchResult(query, locale));
-			Future<List<SearchResult>> localSearch = requestThreadPool.submit(() -> localIndex.get().search(query));
+			String seriesQuery = SeriesNameMatcher.getSeriesQuery(query, false);
+			Future<List<SearchResult>> apiSearch = requestThreadPool.submit(() -> TheTVDBClientWithLocalSearch.super.fetchSearchResult(seriesQuery, locale));
+			Future<List<SearchResult>> localSearch = requestThreadPool.submit(() -> localIndex.get().search(seriesQuery));
 
 			// combine alias names into a single search results, and keep API search name as primary name
 			Map<Integer, SearchResult> results = Stream.of(apiSearch.get(), localSearch.get()).flatMap(List::stream).collect(groupingBy(SearchResult::getId, LinkedHashMap::new, collectingAndThen(toList(), group -> merge(group.get(0), group))));
 
-			return sortBySimilarity(results.values(), singleton(query), getSeriesMatchMetric());
+			return sortBySimilarity(results.values(), singleton(seriesQuery), getSeriesMatchMetric());
 		}
 	}
 

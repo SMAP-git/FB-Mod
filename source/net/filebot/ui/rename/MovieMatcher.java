@@ -43,6 +43,7 @@ import javax.swing.JLabel;
 import net.filebot.similarity.Match;
 import net.filebot.similarity.NameSimilarityMetric;
 import net.filebot.similarity.SimilarityMetric;
+import net.filebot.ui.SearchResultPreviews;
 import net.filebot.ui.SelectDialog;
 import net.filebot.util.FileUtilities.ParentFilter;
 import net.filebot.web.Movie;
@@ -222,7 +223,7 @@ class MovieMatcher implements AutoCompleteMatcher {
 		// allow manual user input
 		synchronized (selectionMemory) {
 			if (!strict && (!autodetect || options.isEmpty()) && !(autodetect && autoSelectionMode.size() > 0)) {
-				String suggestion = options.isEmpty() ? stripReleaseInfo(getName(movieFile)) : options.iterator().next().getName();
+				String suggestion = options.isEmpty() ? checkedStripReleaseInfo(movieFile, strict) : options.iterator().next().getName();
 				String input = inputMemory.get(suggestion);
 
 				if (input == null || suggestion == null || suggestion.isEmpty()) {
@@ -266,6 +267,10 @@ class MovieMatcher implements AutoCompleteMatcher {
 	}
 
 	protected String checkedStripReleaseInfo(File file, boolean strict) throws Exception {
+		String query = getMovieQuery(getName(file));
+		if (query != null) {
+			return query;
+		}
 		String name = stripReleaseInfo(getName(file));
 
 		// try to redeem possible false negative matches
@@ -346,6 +351,7 @@ class MovieMatcher implements AutoCompleteMatcher {
 			// multiple results have been found, user must select one
 			SelectDialog<Movie> selectDialog = new SelectDialog<Movie>(parent, options, true, false, header);
 
+			SearchResultPreviews.install(selectDialog, service);
 			selectDialog.setTitle(service.getName());
 			selectDialog.getMessageLabel().setText("<html>Select best match for \"<b>" + escapeHTML(query) + "</b>\":</html>");
 			selectDialog.getCancelAction().putValue(Action.NAME, "Skip");

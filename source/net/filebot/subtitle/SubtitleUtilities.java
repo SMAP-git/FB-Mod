@@ -65,6 +65,18 @@ import net.filebot.web.VideoHashSubtitleService;
 
 public final class SubtitleUtilities {
 
+	public static String getSubtitleLanguageName(File file) {
+		if (file == null || !SUBTITLE_FILES.accept(file)) {
+			return null;
+		}
+		Locale tag = releaseInfo.getSubtitleLanguageTag(getName(file));
+		if (tag == null) {
+			return null;
+		}
+		Language language = Language.getLanguage(tag);
+		return language == null ? tag.getDisplayLanguage(Locale.ENGLISH) : language.getName();
+	}
+
 	public static Map<File, List<SubtitleDescriptor>> lookupSubtitlesByHash(VideoHashSubtitleService service, Collection<File> files, Locale locale, boolean addOptions, boolean strict) throws Exception {
 		Map<File, List<SubtitleDescriptor>> options = service.getSubtitleList(files.toArray(new File[files.size()]), locale);
 		Map<File, List<SubtitleDescriptor>> results = new LinkedHashMap<File, List<SubtitleDescriptor>>(options.size());

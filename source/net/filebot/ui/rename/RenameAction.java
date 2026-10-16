@@ -139,13 +139,47 @@ class RenameAction extends AbstractAction {
 			HistorySpooler.getInstance().append(renameLog.entrySet());
 
 			// store xattr
-			storeMetaInfo(renameMap, matches);
+			storeMetaInfo(renameLog, matches);
+
+			if (action != StandardRenameAction.TEST) {
+				runPostActions(renameLog, matches);
+			}
 
 			// delete empty folders
 			if (action == StandardRenameAction.MOVE) {
 				deleteEmptyFolders(renameLog);
 			}
 		});
+	}
+
+	private void runPostActions(Map<File, File> renameLog, List<Match<Object, File>> matches) throws Exception {
+		java.util.EnumSet<net.filebot.postprocess.RenamePostProcessor.Action> actions = net.filebot.postprocess.RenamePostProcessor.selectedActions();
+		if (actions.isEmpty()) {
+			return;
+		}
+		java.util.Locale locale = java.util.Locale.forLanguageTag(net.filebot.postprocess.RenamePostProcessor.preferences().get("language", "en"));
+		List<String> failures = ProgressMonitor.runTask("After rename", "Processing successfully renamed files", (message, progress, cancelled) -> {
+			net.filebot.postprocess.RenamePostProcessor processor = new net.filebot.postprocess.RenamePostProcessor();
+			List<String> errors = new ArrayList<String>();
+			for (Match<Object, File> match : matches) {
+				if (cancelled.get()) {
+					break;
+				}
+				File from = match.getCandidate();
+				File to = renameLog.get(from);
+				if (to != null) {
+					File destination = resolve(from, to);
+					if (destination.isFile() && MediaTypes.VIDEO_FILES.accept(destination)) {
+						message.accept(destination.getName());
+						errors.addAll(processor.process(destination, match.getValue(), actions, locale));
+					}
+				}
+			}
+			return errors;
+		}).get();
+		if (!failures.isEmpty()) {
+			log.warning("Files were renamed, but " + failures.size() + " after-rename actions failed:\n" + String.join("\n", failures));
+		}
 	}
 
 	private void storeMetaInfo(Map<File, File> renameMap, List<Match<Object, File>> matches) {

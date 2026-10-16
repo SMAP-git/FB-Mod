@@ -12,7 +12,9 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.SecondaryLoop;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -47,6 +49,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -66,6 +69,34 @@ import javafx.embed.swing.JFXPanel;
 import net.filebot.Settings;
 
 public final class SwingUI {
+
+	/**
+	 * Show a button popup above the button (growing upwards), or below it if there is not enough room above.
+	 */
+	public static void showPopupAbove(JPopupMenu popup, Component source) {
+		int x = -3;
+		int gap = 4;
+
+		popup.show(source, x, -popup.getPreferredSize().height - gap);
+
+		// popup content may change while it becomes visible (e.g. dynamically populated menus), so re-align with the actual size
+		if (popup.isShowing() && source.isShowing()) {
+			Point origin = source.getLocationOnScreen();
+			int height = popup.getHeight() > 0 ? popup.getHeight() : popup.getPreferredSize().height;
+			int top = origin.y - height - gap;
+
+			Rectangle screen = source.getGraphicsConfiguration().getBounds();
+			Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(source.getGraphicsConfiguration());
+			if (top < screen.y + insets.top) {
+				top = origin.y + source.getHeight() + gap;
+			}
+
+			Point current = popup.getLocationOnScreen();
+			if (current.y != top) {
+				popup.setLocation(origin.x + x, top);
+			}
+		}
+	}
 
 	public static void setNimbusLookAndFeel() {
 		try {

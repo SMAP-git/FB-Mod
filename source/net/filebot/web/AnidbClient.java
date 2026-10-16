@@ -35,6 +35,7 @@ import net.filebot.Cache;
 import net.filebot.CacheType;
 import net.filebot.Resource;
 import net.filebot.ResourceManager;
+import net.filebot.similarity.SeriesNameMatcher;
 
 public class AnidbClient extends AbstractEpisodeListProvider {
 
@@ -84,6 +85,7 @@ public class AnidbClient extends AbstractEpisodeListProvider {
 
 	@Override
 	public List<SearchResult> fetchSearchResult(String query, Locale locale) throws Exception {
+		query = SeriesNameMatcher.getSeriesQuery(query, true);
 		return localIndex.get().search(query);
 	}
 
@@ -171,6 +173,14 @@ public class AnidbClient extends AbstractEpisodeListProvider {
 		}
 
 		return new SeriesData(seriesInfo, episodes);
+	}
+
+	public SearchResultPreview getPreview(SearchResult anime) throws Exception {
+		Document dom = getXmlResource(anime.getId());
+		String picture = selectString("anime/picture", dom);
+		String description = selectString("anime/description", dom);
+		String start = selectString("anime/startdate", dom);
+		return new SearchResultPreview(picture == null || picture.isEmpty() ? null : new URL("https://cdn.anidb.net/images/main/" + picture), null, description, start != null && start.length() >= 4 ? start.substring(0, 4) : null);
 	}
 
 	private Document getXmlResource(int aid) throws Exception {

@@ -16,6 +16,7 @@ import javax.swing.Icon;
 import net.filebot.Cache;
 import net.filebot.CacheType;
 import net.filebot.ResourceManager;
+import net.filebot.similarity.SeriesNameMatcher;
 
 public class TVMazeClient extends AbstractEpisodeListProvider {
 
@@ -46,6 +47,7 @@ public class TVMazeClient extends AbstractEpisodeListProvider {
 
 	@Override
 	public List<SearchResult> fetchSearchResult(String query, Locale locale) throws Exception {
+		query = SeriesNameMatcher.getSeriesQuery(query, false);
 		// e.g. http://api.tvmaze.com/search/shows?q=girls
 		Object response = request("search/shows?q=" + encode(query, true));
 
@@ -99,6 +101,19 @@ public class TVMazeClient extends AbstractEpisodeListProvider {
 		}).collect(toList());
 
 		return new SeriesData(seriesInfo, episodes);
+	}
+
+	public SearchResultPreview getPreview(SearchResult show) throws Exception {
+		Object response = request("shows/" + show.getId());
+		String image = getString(getMap(response, "image"), "medium");
+		String summary = getString(response, "summary");
+		if (summary != null) {
+			summary = summary.replaceAll("<[^>]+>", "").trim();
+		}
+		String premiered = getString(response, "premiered");
+		Object network = getMap(response, "network");
+		String country = getString(getMap(network, "country"), "code");
+		return new SearchResultPreview(image == null ? null : new URL(image), country, summary, premiered != null && premiered.length() >= 4 ? premiered.substring(0, 4) : null);
 	}
 
 	protected Object request(String resource) throws Exception {

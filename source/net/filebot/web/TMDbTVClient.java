@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 
 import javax.swing.Icon;
 
+import net.filebot.similarity.SeriesNameMatcher;
+
 public class TMDbTVClient extends AbstractEpisodeListProvider {
 
 	private final TMDbClient tmdb;
@@ -57,6 +59,7 @@ public class TMDbTVClient extends AbstractEpisodeListProvider {
 
 	@Override
 	protected List<SearchResult> fetchSearchResult(String query, Locale locale) throws Exception {
+		query = SeriesNameMatcher.getSeriesQuery(query, false);
 		// query by name with year filter if possible
 		Matcher nameYear = tmdb.getNameYearMatcher(query);
 		if (nameYear.matches()) {
@@ -91,6 +94,14 @@ public class TMDbTVClient extends AbstractEpisodeListProvider {
 
 			return new SearchResult(id, name, alternativeTitles);
 		}).filter(Objects::nonNull).collect(toList());
+	}
+
+	public SearchResultPreview getPreview(SearchResult series, Locale locale) throws Exception {
+		return tmdb.getPreview("tv", series.getId(), locale);
+	}
+
+	public java.net.URL getPoster(SearchResult series, Locale locale) throws Exception {
+		return tmdb.getPoster("tv", series.getId(), locale);
 	}
 
 	@Override

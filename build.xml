@@ -113,7 +113,7 @@
 	<macrodef name="get-windows-jre" description="Fetch and unpack JRE bundle (64-bit Windows)">
 		<attribute name="dest" />
 		<sequential>
-			<exec executable="powershell" dir="${dir.cache}" failonerror="no">
+			<exec executable="powershell" dir="${dir.cache}" failonerror="yes" unless:set="windows.runtime.prepared">
 				<arg line="-ExecutionPolicy bypass" />
 				<arg line="-File get-java.ps1" />
 			</exec>
@@ -121,7 +121,7 @@
 				<patternset refid="pattern.jre" />
 				<cutdirsmapper dirs="1" />
 			</unzip>
-			<exec executable="powershell" dir="${dir.cache}" failonerror="no">
+			<exec executable="powershell" dir="${dir.cache}" failonerror="yes" unless:set="windows.runtime.prepared">
 				<arg line="-ExecutionPolicy bypass" />
 				<arg line="-File get-jfx.ps1" />
 			</exec>
@@ -313,6 +313,11 @@
 
 
 	<target name="jar" depends="revision, OS-Test">
+		<!-- Remove obsolete outputs from incremental builds. -->
+		<delete>
+			<fileset dir="${dir.dist}/lib" includes="ant*.jar,groovy-ant.jar,sevenzipjbinding*.jar,commons-vfs2.jar,junrar.jar,jsch.jar" />
+			<fileset dir="${dir.build}/net/filebot/archive" includes="ApacheVFS*.class,SevenZipNativeBindings*.class,SevenZipLoader*.class,ArchiveOpenVolumeCallback*.class,ExtractCallback*.class,ExtractOutStream*.class" erroronmissingdir="false" />
+		</delete>
 		<!-- add missing slf4j-api file -->
     <copy file="${basedir}/cache/slf4j-api.jar" todir="${basedir}/lib/ivy/jar" />
 
@@ -330,6 +335,7 @@
 		<path id="jar.classpath">
 			<fileset dir="${dir.dist}/lib">
 				<include name="*.jar" />
+				<exclude name="${package.name}.jar" />
 			</fileset>
 		</path>
 		<manifestclasspath property="jar.classpath" jarfile="${dir.dist}/lib/${package.name}.jar">
@@ -369,6 +375,58 @@
 		</jar>
 	</target>
 
+
+	<target name="test-features" depends="jar" description="Run offline tests for archive extraction, REST subtitles and post-rename actions">
+		<property name="feature.7z.command" value="7z" />
+		<mkdir dir="${dir.dist}/test-classes" />
+		<path id="feature.test.classpath">
+			<pathelement location="${dir.build}" />
+			<pathelement location="${dir.dist}/test-classes" />
+			<fileset dir="${dir.dist}/lib" includes="*.jar" />
+			<fileset dir="${dir.lib}/ivy" includes="**/junit.jar,**/hamcrest*.jar" />
+		</path>
+		<javac srcdir="${basedir}/test" destdir="${dir.dist}/test-classes" release="${jvm.version}" encoding="utf-8" includeAntRuntime="no">
+			<include name="net/filebot/archive/SevenZipExecutableTest.java" />
+			<include name="net/filebot/web/OpenSubtitlesRestClientTest.java" />
+			<include name="net/filebot/web/TMDbFilenameSearchTest.java" />
+			<include name="net/filebot/web/EpisodeFilenameSearchTest.java" />
+			<include name="net/filebot/web/TheTVDBClientV4Test.java" />
+			<include name="net/filebot/web/TheTVDBConfigurationTest.java" />
+			<include name="net/filebot/ui/rename/TMDbEpisodeMatchingTest.java" />
+			<include name="net/filebot/ui/rename/MovieFilenameMatchingTest.java" />
+			<include name="net/filebot/ui/rename/SubtitleLanguageNamingTest.java" />
+			<include name="net/filebot/postprocess/RenamePostProcessorTest.java" />
+			<include name="net/filebot/ui/UserInterfaceSmokeTest.java" />
+			<classpath refid="feature.test.classpath" />
+		</javac>
+		<java classname="org.junit.runner.JUnitCore" fork="yes" failonerror="yes">
+			<classpath refid="feature.test.classpath" />
+			<jvmarg value="-Djava.awt.headless=true" />
+			<jvmarg value="-Dnet.filebot.Archive.7z=${feature.7z.command}" />
+			<jvmarg value="-Djava.util.prefs.userRoot=${dir.dist}/test-preferences" />
+			<jvmarg value="-Dapplication.dir=${dir.dist}/test-data" />
+			<arg value="net.filebot.archive.SevenZipExecutableTest" />
+			<arg value="net.filebot.web.OpenSubtitlesRestClientTest" />
+			<arg value="net.filebot.web.TMDbFilenameSearchTest" />
+			<arg value="net.filebot.web.EpisodeFilenameSearchTest" />
+			<arg value="net.filebot.web.TheTVDBClientV4Test" />
+			<arg value="net.filebot.web.TheTVDBConfigurationTest" />
+			<arg value="net.filebot.ui.rename.TMDbEpisodeMatchingTest" />
+			<arg value="net.filebot.ui.rename.MovieFilenameMatchingTest" />
+			<arg value="net.filebot.ui.rename.SubtitleLanguageNamingTest" />
+			<arg value="net.filebot.postprocess.RenamePostProcessorTest" />
+		</java>
+	</target>
+
+	<target name="test-ui" depends="test-features" description="Smoke-test Swing UI (use xvfb-run on headless Linux)">
+		<java classname="org.junit.runner.JUnitCore" fork="yes" failonerror="yes">
+			<classpath refid="feature.test.classpath" />
+			<jvmarg value="-Djava.util.prefs.userRoot=${dir.dist}/test-preferences" />
+			<jvmarg value="-Dapplication.dir=${dir.dist}/test-data" />
+			<jvmarg value="-Dfilebot.smoke.image=${dir.dist}/test-ui.png" />
+			<arg value="net.filebot.ui.UserInterfaceSmokeTest" />
+		</java>
+	</target>
 
 	<target name="appx" depends="revision" description="Build Windows 10 package">
 		<property name="appx.arch" value="x64" />
@@ -610,6 +668,11 @@
 		<property name="dir.staging" location="${dir.dist}/deb" />
 
 		<get-linux-jre dest="${dir.staging}/jre" />
+		<exec executable="python3" failonerror="yes">
+			<arg value="${dir.installer}/deb/bundle-runtime.py" />
+			<arg value="${dir.staging}/runtime" />
+			<arg value="${dir.cache}" />
+		</exec>
 
 		<copy-replace todir="${dir.staging}">
 			<fileset dir="${dir.installer}/deb" />
@@ -618,8 +681,10 @@
 		<jdeb destfile="${dir.dist}/${application.name}_${application.version}_amd64.deb" control="${dir.staging}/control" compression="${tar.compression}" verbose="true">
 			<tarfileset prefix="/usr/share/filebot/bin" dir="${dir.staging}" includes="*.sh" filemode="755" />
 			<tarfileset prefix="/usr/share/filebot/mod" dir="${dir.staging}/jre/ext/modules/lib" />
+			<tarfileset prefix="/usr/share/filebot/jre" dir="${dir.staging}/runtime" includes="lib/**,conf/**,legal/**,release,NOTICE" />
+			<tarfileset prefix="/usr/share/filebot/jre/bin" dir="${dir.staging}/runtime/bin" filemode="755" />
 			<tarfileset prefix="/usr/share/filebot/jar" dir="${dir.dist}/lib" />
-			<tarfileset prefix="/usr/share/filebot/lib" dir="${dir.lib}/native/linux-amd64" />
+			<tarfileset prefix="/usr/share/filebot/lib" dir="${dir.lib}/native/linux-amd64" excludes="*7-Zip-JBinding*" />
 
 			<tarfileset prefix="/usr/share/icons/hicolor/scalable/apps" dir="${dir.installer}/icons" includes="filebot.svg" />
 			<tarfileset prefix="/usr/share" dir="${dir.staging}/share" />
@@ -1010,20 +1075,6 @@
 			</chainedmapper>
 		</unzip>
 
-		<unzip src="${dir.lib}/ivy/jar/sevenzipjbinding-all-platforms.jar" dest="${dir.lib}/native/${arch}" overwrite="yes">
-			<patternset>
-				<include name="**/${arch.7zj}/*.dll" />
-				<include name="**/${arch.7zj}/*.so" />
-				<include name="**/${arch.7zj}/*.dylib" />
-			</patternset>
-			<chainedmapper>
-				<flattenmapper />
-				<compositemapper>
-					<globmapper from="lib*.dll" to="*.dll" />
-					<identitymapper />
-				</compositemapper>
-			</chainedmapper>
-		</unzip>
 	</target>
 
 

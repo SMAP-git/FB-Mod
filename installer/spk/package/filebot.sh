@@ -48,11 +48,11 @@ export LC_ALL="en_US.UTF-8"
 # choose archive extractor / media characteristics parser
 if uname -m | egrep -q "i386|i686|amd64|x86_64"; then
 	# i686 or x86_64
-	ARCHIVE_EXTRACTOR="SevenZipNativeBindings"  # use lib7-Zip-JBinding.so
+	ARCHIVE_EXTRACTOR="SevenZipExecutable"     # requires 7z on PATH
 	MEDIA_PARSER="libmediainfo"                 # use libmediainfo
 else
 	# armv7l or aarch64
-	ARCHIVE_EXTRACTOR="ApacheVFS"               # use Apache Commons VFS2
+	ARCHIVE_EXTRACTOR="SevenZipExecutable"     # requires 7z on PATH
 	MEDIA_PARSER="ffprobe"                      # use ffprobe
 fi
 

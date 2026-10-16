@@ -58,7 +58,7 @@ class RenameList<E> extends FileBotList<E> {
 	private JButton createLoadButton() {
 		ActionPopup actionPopup = new ActionPopup("Load Files", ResourceManager.getIcon("action.load"));
 
-		actionPopup.add(newAction("Select Folders", ResourceManager.getIcon("tree.closed"), evt -> {
+		actionPopup.add(newAction("Select Folder", ResourceManager.getIcon("tree.closed"), evt -> {
 			loadAction.actionPerformed(new ActionEvent(evt.getSource(), evt.getID(), evt.getActionCommand(), 0));
 		}));
 
@@ -66,7 +66,10 @@ class RenameList<E> extends FileBotList<E> {
 			loadAction.actionPerformed(new ActionEvent(evt.getSource(), evt.getID(), evt.getActionCommand(), ActionEvent.SHIFT_MASK));
 		}));
 
-		JButton button = new JButton(loadAction);
+		JButton button = new JButton(newAction("Load", ResourceManager.getIcon("action.load"), evt -> {
+			JButton source = (JButton) evt.getSource();
+			showPopupAbove(actionPopup, source);
+		}));
 		button.setComponentPopupMenu(actionPopup);
 		return button;
 	}

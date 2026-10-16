@@ -162,6 +162,19 @@ public class OMDbClient implements MovieIdentificationService {
 		return getInfoMap(request(param));
 	}
 
+	public SearchResultPreview getPreview(Movie movie) throws Exception {
+		if (movie.getImdbId() <= 0) {
+			return null;
+		}
+		Map<String, String> data = getMovieInfo(movie.getImdbId(), null, null, false);
+		if (!Boolean.parseBoolean(data.get("response"))) {
+			return null;
+		}
+		String poster = data.get("poster");
+		String plot = data.get("plot");
+		return new SearchResultPreview(poster == null || !poster.startsWith("http") ? null : new URL(poster), data.get("country"), plot == null || plot.equals("N/A") ? null : plot, data.get("year"));
+	}
+
 	public MovieInfo getMovieInfo(Movie movie) throws Exception {
 		Map<String, String> data = movie.getImdbId() > 0 ? getMovieInfo(movie.getImdbId(), null, null, false) : getMovieInfo(null, movie.getName(), String.valueOf(movie.getYear()), false);
 

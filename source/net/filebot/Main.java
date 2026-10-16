@@ -216,7 +216,7 @@ public class Main {
 
 	private static void startUserInterface(ArgumentBean args) {
 		// use native LaF an all platforms
-		setSystemLookAndFeel();
+		net.filebot.ui.Theme.getSelected().apply();
 
 		// start standard frame or single panel frame
 		PanelBuilder[] panels = args.getPanelBuilders();

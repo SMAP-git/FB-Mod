@@ -7,5 +7,5 @@ Description: @{package.synopsis}
 Homepage: @{package.homepage}
 Section: utils
 Priority: extra
-Depends: openjdk-@{jvm.version}-jre
+Depends: libc6, libstdc++6, zlib1g, libx11-6, libxext6, libxi6, libxrender1, libxtst6, libgtk-3-0 | libgtk-3-0t64, libasound2 | libasound2t64, 7zip | p7zip-full
 Enhances: nautilus-actions

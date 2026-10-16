@@ -26,6 +26,9 @@ public class HeaderPanel extends JComponent {
 	private Color[] gradientColors = { new Color(0xF6F6F6), new Color(0xF8F8F8), new Color(0xF3F3F3) };
 
 	public HeaderPanel() {
+		if (Theme.isDark()) {
+			gradientColors = new Color[] { new Color(0x303236), new Color(0x35373B), new Color(0x303236) };
+		}
 		setLayout(new BorderLayout());
 		setBackground(Color.WHITE);
 
@@ -36,6 +39,9 @@ public class HeaderPanel extends JComponent {
 		titleLabel.setVerticalAlignment(SwingConstants.CENTER);
 		titleLabel.setOpaque(false);
 		titleLabel.setForeground(new Color(0x101010));
+		if (Theme.isDark()) {
+			titleLabel.setForeground(new Color(0xE6E6E6));
+		}
 		titleLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
 
 		centerPanel.setBorder(createEmptyBorder());

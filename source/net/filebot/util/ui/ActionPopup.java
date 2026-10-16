@@ -10,7 +10,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.Painter;
+import javax.swing.UIDefaults;
 
+import net.filebot.ui.Theme;
 import net.miginfocom.swing.MigLayout;
 
 public class ActionPopup extends JPopupMenu {
@@ -24,6 +27,20 @@ public class ActionPopup extends JPopupMenu {
 	public ActionPopup(String label, Icon icon) {
 		// fix text color (especially on Linux with dark GTK theme)
 		setForeground(new JMenuItem().getForeground());
+		if (Theme.isDark()) {
+			Color background = new Color(0x232529);
+			setBackground(background);
+			setForeground(new Color(0xE6E6E6));
+			UIDefaults overrides = new UIDefaults();
+			overrides.put("PopupMenu[Enabled].backgroundPainter", (Painter<JPopupMenu>) (graphics, component, width, height) -> {
+				graphics.setColor(background);
+				graphics.fillRect(0, 0, width, height);
+				graphics.setColor(new Color(0x62666E));
+				graphics.drawRect(0, 0, width - 1, height - 1);
+			});
+			putClientProperty("Nimbus.Overrides", overrides);
+			putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+		}
 
 		headerLabel.setText(label);
 		headerLabel.setForeground(getForeground());
@@ -33,7 +50,7 @@ public class ActionPopup extends JPopupMenu {
 		actionPanel.setOpaque(false);
 
 		statusLabel.setFont(statusLabel.getFont().deriveFont(10f));
-		statusLabel.setForeground(Color.GRAY);
+		statusLabel.setForeground(Theme.isDark() ? new Color(0xBDC3CC) : Color.GRAY);
 
 		setLayout(new MigLayout("nogrid, fill, insets 0"));
 
@@ -57,6 +74,10 @@ public class ActionPopup extends JPopupMenu {
 		actionPanel.add(createLabel(text), "gapx 4px 4px, growx, wrap 3px");
 	}
 
+	public void clearActions() {
+		actionPanel.removeAll();
+	}
+
 	@Override
 	public void addSeparator() {
 		actionPanel.add(new JSeparator(), "growx, wrap 1px");
@@ -71,7 +92,7 @@ public class ActionPopup extends JPopupMenu {
 
 		// use rollover color
 		link.setRolloverEnabled(false);
-		link.setColor(link.getRolloverColor());
+		link.setColor(Theme.isDark() ? new Color(0x8FCBFF) : link.getRolloverColor());
 
 		// close popup when action is triggered
 		link.addActionListener(closeListener);

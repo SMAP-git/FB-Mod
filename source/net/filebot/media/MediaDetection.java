@@ -605,6 +605,20 @@ public class MediaDetection {
 			names.add(getName(movieFolder));
 		}
 
+		// Query clear title/year filenames before consulting the legacy movie index.
+		if (service != null && options.isEmpty() && !isEpisode(movieFile, true)) {
+			Set<String> directQueries = new LinkedHashSet<String>();
+			for (String name : names) {
+				String query = getMovieQuery(name);
+				if (query != null && directQueries.add(query)) {
+					List<Movie> results = service.searchMovie(query, locale);
+					if (!results.isEmpty()) {
+						return results;
+					}
+				}
+			}
+		}
+
 		// reduce movie names
 		Set<String> terms = reduceMovieNamePermutations(names);
 		List<Movie> movieNameMatches = matchMovieName(terms, true, 0);
@@ -781,6 +795,19 @@ public class MediaDetection {
 			return String.format("%s %s", trimTrailingPunctuation(matcher.group(1)), matcher.group(2));
 		}
 		return null;
+	}
+
+	public static String getMovieQuery(String filename) {
+		String name = normalizePunctuation(filename.replaceFirst("^\\s*\\[[^\\]]+\\]\\s*", ""));
+		// Prefer an explicitly bracketed release year over numbers in the title.
+		Matcher bracketed = Pattern.compile("^(.+?)\\s*[\\[(]((?:19|20)\\d{2})[\\])].*$").matcher(name);
+		Matcher year = Pattern.compile("^(.+)\\s+((?:19|20)\\d{2})(?=\\s|$).*$").matcher(name);
+		Matcher match = bracketed.matches() ? bracketed : year.matches() ? year : null;
+		if (match == null || parseMovieYear(match.group(2)).isEmpty()) {
+			return null;
+		}
+		String title = trimTrailingPunctuation(match.group(1)).trim();
+		return title.isEmpty() ? null : title + " " + match.group(2);
 	}
 
 	public static Set<String> reduceMovieNamePermutations(Collection<String> terms) throws IOException {

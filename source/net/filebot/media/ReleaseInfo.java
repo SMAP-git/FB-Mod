@@ -125,6 +125,13 @@ public class ReleaseInfo {
 		}
 
 		String lang = matchLast(languageTag, null, name);
+		// Bare ".hi" denotes hearing-impaired subtitles; explicit "[hi]" is Hindi.
+		if ("hi".equalsIgnoreCase(lang)) {
+			return new Locale("hin");
+		}
+		if ("ii".equalsIgnoreCase(lang) || "iii".equalsIgnoreCase(lang)) {
+			return new Locale("iii");
+		}
 		return lang == null ? null : getDefaultLanguageMap().get(lang);
 	}
 
@@ -290,8 +297,9 @@ public class ReleaseInfo {
 	}
 
 	public Pattern getSubtitleLanguageTagPattern() {
-		// e.g. ".en.srt" or ".en.forced.srt"
-		return compile("(?<=[._-])" + or(quoteAll(getDefaultLanguageMap().keySet())) + "(?=([._-]" + or(getSubtitleCategoryTags()) + ")?$)", CASE_INSENSITIVE);
+		String languages = or(quoteAll(getDefaultLanguageMap().keySet()));
+		// Match extraction tags such as "_track3_[eng]" as well as ".en.forced".
+		return compile("(?<=\\[)(?:" + languages + "|hi|ii|iii)(?=\\])|(?<=[._-])" + languages + "(?=([._-]" + or(getSubtitleCategoryTags()) + ")?$)", CASE_INSENSITIVE);
 	}
 
 	public Pattern getResolutionPattern() {
@@ -593,6 +601,7 @@ public class ReleaseInfo {
 			Locale locale = new Locale(code); // force ISO3 language as default toString() value
 			Locale iso3locale = new Locale(locale.getISO3Language());
 
+			languageMap.put(code, iso3locale);
 			languageMap.put(locale.getLanguage(), iso3locale);
 			languageMap.put(locale.getISO3Language(), iso3locale);
 
@@ -602,6 +611,14 @@ public class ReleaseInfo {
 				String languageName = Normalizer.normalize(locale.getDisplayLanguage(language), Form.NFKD);
 				languageMap.put(languageName.toLowerCase(), iso3locale);
 			}
+		}
+
+		for (net.filebot.Language language : net.filebot.Language.availableLanguages()) {
+			Locale locale = new Locale(language.getISO3());
+			languageMap.put(language.getISO2(), locale);
+			languageMap.put(language.getTag(), locale);
+			languageMap.put(language.getISO3(), locale);
+			languageMap.put(language.getISO3B(), locale);
 		}
 
 		// unofficial language for pb/pob for Portuguese (Brazil)

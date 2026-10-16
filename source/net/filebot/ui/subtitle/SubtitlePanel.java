@@ -72,6 +72,9 @@ public class SubtitlePanel extends AbstractSearchPanel<SubtitleProvider, Subtitl
 		// add at the top right corner
 		add(uploadDropTarget, "width 54px!, height 54px!, gap before unrel", 4);
 		add(downloadDropTarget, "width 54px!, height 54px!, gap before rel, gap after 10px", 5);
+		add(createImageButton(newAction("Preferences", ResourceManager.getIcon("action.settings"), evt -> {
+			new net.filebot.ui.PreferencesDialog(getWindow(SubtitlePanel.this)).setVisible(true);
+		})), "w pref!, h 2+pref!, gap rel, sgy button", 3);
 	}
 
 	@Subscribe
@@ -278,6 +281,10 @@ public class SubtitlePanel extends AbstractSearchPanel<SubtitleProvider, Subtitl
 
 		@Override
 		public void actionPerformed(ActionEvent evt) {
+			if (searchTextField.getSelectButton().getSelectedValue() == WebServices.OpenSubtitlesCom) {
+				new net.filebot.ui.PreferencesDialog(getWindow(SubtitlePanel.this)).setVisible(true);
+				return;
+			}
 			final JDialog authPanel = new JDialog(getWindow(SubtitlePanel.this), ModalityType.APPLICATION_MODAL);
 			authPanel.setTitle("Login");
 			authPanel.setLocation(getOffsetLocation(authPanel.getOwner()));

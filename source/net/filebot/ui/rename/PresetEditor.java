@@ -157,7 +157,7 @@ public class PresetEditor extends JDialog {
 		pathInput.setText(p.getInputFolder() == null ? "" : p.getInputFolder().getPath());
 		filterEditor.setText(p.getIncludeFilter() == null ? "" : p.getIncludeFilter().getExpressionFilter().getExpression());
 		formatEditor.setText(p.getFormat() == null ? "" : p.getFormat().getExpression());
-		providerCombo.setSelectedItem(p.getDatasource() == null ? WebServices.TheTVDB : p.getDatasource());
+		providerCombo.setSelectedItem(p.getDatasource() == null ? WebServices.TheMovieDB_TV : p.getDatasource());
 		sortOrderCombo.setSelectedItem(p.getSortOrder() == null ? SortOrder.Airdate : p.getSortOrder());
 		matchModeCombo.setSelectedItem(p.getMatchMode() == null ? RenamePanel.MATCH_MODE_OPPORTUNISTIC : p.getMatchMode());
 		actionCombo.setSelectedItem(p.getRenameAction() == null ? StandardRenameAction.MOVE : p.getRenameAction());

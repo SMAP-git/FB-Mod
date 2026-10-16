@@ -31,6 +31,22 @@ import net.filebot.util.FileUtilities;
 
 public class SeriesNameMatcher {
 
+	public static String getSeriesQuery(String filename, boolean anime) {
+		String prefix = new SeriesNameMatcher(true).matchByEpisodeIdentifier(filename);
+		if (prefix == null && anime) {
+			Matcher absoluteEpisode = Pattern.compile("^(.+?)\\s+-\\s+\\d{1,3}(?:v\\d+)?(?=\\s|[.\\[(]|$)").matcher(filename);
+			if (absoluteEpisode.find()) {
+				prefix = absoluteEpisode.group(1);
+			}
+		}
+		if (prefix == null || prefix.trim().isEmpty()) {
+			return filename.trim();
+		}
+		// Release groups precede the title; years in parentheses identify remakes.
+		prefix = prefix.replaceFirst("^\\s*\\[[^\\]]+\\]\\s*", "");
+		return normalizePunctuation(prefix).trim();
+	}
+
 	protected final SimilarityMetric metric;
 	protected final SeasonEpisodeMatcher seasonEpisodeMatcher;
 	protected final DateMatcher dateMatcher;

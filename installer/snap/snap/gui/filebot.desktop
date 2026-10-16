@@ -6,6 +6,6 @@ MimeType=@{deb.application.mimetype}
 Exec=filebot %F
 Icon=${SNAP}/meta/gui/filebot.svg
 Categories=@{deb.application.categories}
-StartupNotify=true
+StartupNotify=false
 StartupWMClass=@{deb.application.class}
 X-Ubuntu-Gettext-Domain=@{package.name}

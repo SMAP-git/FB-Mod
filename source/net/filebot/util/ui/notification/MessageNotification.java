@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTextPaneUI;
 
 public class MessageNotification extends NotificationWindow {
 
@@ -54,11 +55,26 @@ public class MessageNotification extends NotificationWindow {
 		textPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
 		headLabel = new JLabel(head);
+		headLabel.setForeground(Color.BLACK);
 		headLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		headLabel.setFont(headLabel.getFont().deriveFont(Font.BOLD));
+		headLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		textPanel.add(headLabel, BorderLayout.NORTH);
 
-		textArea = new JTextPane();
+		// use a look-and-feel independent UI so the popup looks the same as the light theme in every theme
+		textArea = new JTextPane() {
+
+			@Override
+			public void updateUI() {
+				setUI(new BasicTextPaneUI());
+			}
+		};
+		textArea.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+		textArea.setForeground(Color.BLACK);
+		textArea.setBackground(Color.WHITE);
+		textArea.setCaretColor(Color.BLACK);
+		textArea.setSelectionColor(new Color(57, 105, 138));
+		textArea.setSelectedTextColor(Color.WHITE);
+		textArea.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 		textArea.setText(text);
 		textArea.setEditable(false);
 		textArea.setOpaque(false);

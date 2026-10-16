@@ -79,8 +79,9 @@ public class UserFiles {
 	}
 
 	public static List<File> showLoadDialogSelectFiles(boolean folderMode, boolean multiSelection, File defaultFile, ExtensionFileFilter filter, String title, ActionEvent evt) {
-		String defaultFileKey = ((folderMode && filter == null) || !(folderMode && filter != null && isShiftOrAltDown(evt))) ? KEY_OPEN_FOLDER : KEY_OPEN_FILE;
-		List<File> files = defaultFileChooser.showLoadDialogSelectFiles(defaultFileKey == KEY_OPEN_FOLDER, multiSelection, getFileChooserDefaultFile(defaultFileKey, defaultFile), filter, title, evt);
+		boolean selectFolder = folderMode && (evt == null || !isShiftOrAltDown(evt));
+		String defaultFileKey = selectFolder ? KEY_OPEN_FOLDER : KEY_OPEN_FILE;
+		List<File> files = defaultFileChooser.showLoadDialogSelectFiles(selectFolder, multiSelection, getFileChooserDefaultFile(defaultFileKey, defaultFile), filter, title, evt);
 		if (files.size() > 0) {
 			setFileChooserDefaultFile(defaultFileKey, files.get(0));
 		}
@@ -257,6 +258,15 @@ public class UserFiles {
 
 					@Override
 					public List<File> call() throws Exception {
+						javafx.stage.Stage owner = createOwnerStage();
+						try {
+							return showDialog(owner);
+						} finally {
+							owner.close();
+						}
+					}
+
+					private List<File> showDialog(javafx.stage.Stage owner) {
 						// show DirectoryChooser
 						if (folderMode) {
 							javafx.stage.DirectoryChooser directoryChooser = new javafx.stage.DirectoryChooser();
@@ -265,7 +275,7 @@ public class UserFiles {
 								directoryChooser.setInitialDirectory(defaultFile);
 							}
 
-							File file = directoryChooser.showDialog(null);
+							File file = directoryChooser.showDialog(owner);
 							if (file != null)
 								return singletonList(file);
 							else
@@ -291,11 +301,11 @@ public class UserFiles {
 						}
 
 						if (multiSelection) {
-							List<File> files = fileChooser.showOpenMultipleDialog(null);
+							List<File> files = fileChooser.showOpenMultipleDialog(owner);
 							if (files != null)
 								return files;
 						} else {
-							File file = fileChooser.showOpenDialog(null);
+							File file = fileChooser.showOpenDialog(owner);
 							if (file != null)
 								return singletonList(file);
 						}
@@ -310,6 +320,15 @@ public class UserFiles {
 
 					@Override
 					public File call() throws Exception {
+						javafx.stage.Stage owner = createOwnerStage();
+						try {
+							return showDialog(owner);
+						} finally {
+							owner.close();
+						}
+					}
+
+					private File showDialog(javafx.stage.Stage owner) {
 						javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
 						fileChooser.setTitle(title);
 
@@ -320,9 +339,21 @@ public class UserFiles {
 							fileChooser.setInitialFileName(defaultFile.getName());
 						}
 
-						return fileChooser.showSaveDialog(null);
+						return fileChooser.showSaveDialog(owner);
 					}
 				});
+			}
+
+			// native file dialogs without an owner may open behind the main window, so use a tiny always-on-top owner to force the dialog to the front
+			private javafx.stage.Stage createOwnerStage() {
+				javafx.stage.Stage owner = new javafx.stage.Stage(javafx.stage.StageStyle.UTILITY);
+				owner.setOpacity(0);
+				owner.setWidth(1);
+				owner.setHeight(1);
+				owner.setAlwaysOnTop(true);
+				owner.show();
+				owner.toFront();
+				return owner;
 			}
 
 			public <T> T runAndWait(Callable<T> c) {

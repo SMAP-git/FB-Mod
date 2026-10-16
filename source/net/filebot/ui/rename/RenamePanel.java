@@ -440,7 +440,26 @@ public class RenamePanel extends JComponent {
 
 	private ActionPopup createFetchPopup() {
 		ActionPopup actionPopup = new ActionPopup("Fetch & Match Data", ResourceManager.getIcon("action.fetch"));
+		populateFetchPopup(actionPopup);
+		actionPopup.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+				actionPopup.clearActions();
+				populateFetchPopup(actionPopup);
+			}
 
+			@Override
+			public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
+			}
+
+			@Override
+			public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+			}
+		});
+		return actionPopup;
+	}
+
+	private void populateFetchPopup(ActionPopup actionPopup) {
 		actionPopup.addDescription("Episode Mode:");
 
 		// create actions for match popup episode list completion
@@ -534,7 +553,6 @@ public class RenamePanel extends JComponent {
 			}
 		}));
 
-		return actionPopup;
 	}
 
 	private ActionPopup createSettingsPopup() {
@@ -550,6 +568,11 @@ public class RenamePanel extends JComponent {
 		for (StandardRenameAction action : Preset.getSupportedActions()) {
 			actionPopup.add(new SetRenameAction(action));
 		}
+
+		actionPopup.addSeparator();
+		actionPopup.add(newAction("Preferences...", ResourceManager.getIcon("action.settings"), evt -> {
+			new net.filebot.ui.PreferencesDialog(getWindowAncestor(RenamePanel.this)).setVisible(true);
+		}));
 
 		return actionPopup;
 	}
@@ -701,7 +724,7 @@ public class RenamePanel extends JComponent {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JComponent source = (JComponent) e.getSource();
-			source.getComponentPopupMenu().show(source, -3, source.getHeight() + 4);
+			showPopupAbove(source.getComponentPopupMenu(), source);
 		}
 	};
 
@@ -715,7 +738,7 @@ public class RenamePanel extends JComponent {
 		public void actionPerformed(ActionEvent evt) {
 			try {
 				JComponent source = (JComponent) evt.getSource();
-				createPresetsPopup().show(source, -3, source.getHeight() + 4);
+				showPopupAbove(createPresetsPopup(), source);
 			} catch (Exception e) {
 				debug.log(Level.WARNING, e, e::toString);
 			}

@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,6 +42,8 @@ import net.filebot.Cache.TypedCache;
 import net.filebot.CacheType;
 import net.filebot.similarity.EpisodeMatcher;
 import net.filebot.similarity.Match;
+import net.filebot.similarity.SeriesNameMatcher;
+import net.filebot.ui.SearchResultPreviews;
 import net.filebot.ui.SelectDialog;
 import net.filebot.web.Episode;
 import net.filebot.web.EpisodeListProvider;
@@ -89,12 +92,13 @@ class EpisodeListMatcher implements AutoCompleteMatcher {
 				// in strict mode simply process file-by-file (ignoring all files that don't contain clear SxE patterns)
 				mediaFiles.stream().filter(f -> isEpisode(f, false)).map(f -> {
 					return workerThreadPool.submit(() -> {
-						return matchEpisodeSet(singletonList(f), detectSeriesNames(singleton(f), anime, locale), sortOrder, strict, locale, autodetection, parent);
+						String filenameQuery = getFilenameQuery(f);
+						return matchEpisodeSet(singletonList(f), filenameQuery == null ? detectSeriesNames(singleton(f), anime, locale) : singleton(filenameQuery), sortOrder, strict, locale, autodetection, parent);
 					});
 				}).forEach(tasks::add);
 			} else {
 				// in non-strict mode use the complicated (more powerful but also more error prone) match-batch-by-batch logic
-				mapSeriesNamesByFiles(mediaFiles, locale, anime).forEach((f, n) -> {
+				getSeriesBatches(mediaFiles, locale).forEach((f, n) -> {
 					// 1. handle series name batch set all at once -> only 1 batch set
 					// 2. files don't seem to belong to any series -> handle folder per folder -> multiple batch sets
 					Collection<List<File>> batches = n != null && n.size() > 0 ? singleton(new ArrayList<File>(f)) : mapByFolder(f).values();
@@ -138,6 +142,31 @@ class EpisodeListMatcher implements AutoCompleteMatcher {
 		matches.sort(comparing(Match::getValue, OriginalOrder.of(files)));
 
 		return matches;
+	}
+
+	private String getFilenameQuery(File file) {
+		String name = getName(file);
+		String query = SeriesNameMatcher.getSeriesQuery(name, anime);
+		return query.equals(name.trim()) || query.isEmpty() ? null : query;
+	}
+
+	private Map<Set<File>, Set<String>> getSeriesBatches(List<File> files, Locale locale) throws Exception {
+		Map<String, Set<File>> direct = new LinkedHashMap<String, Set<File>>();
+		List<File> remaining = new ArrayList<File>();
+		for (File file : files) {
+			String query = getFilenameQuery(file);
+			if (query == null) {
+				remaining.add(file);
+			} else {
+				direct.computeIfAbsent(query, key -> new LinkedHashSet<File>()).add(file);
+			}
+		}
+		Map<Set<File>, Set<String>> batches = new LinkedHashMap<Set<File>, Set<String>>();
+		direct.forEach((query, batch) -> batches.put(batch, singleton(query)));
+		if (!remaining.isEmpty()) {
+			batches.putAll(mapSeriesNamesByFiles(remaining, locale, anime));
+		}
+		return batches;
 	}
 
 	public List<Match<File, ?>> matchEpisodeSet(List<File> files, Collection<String> queries, SortOrder sortOrder, boolean strict, Locale locale, boolean autodetection, Component parent) throws Exception {
@@ -235,6 +264,7 @@ class EpisodeListMatcher implements AutoCompleteMatcher {
 
 			// multiple results have been found, user must select one
 			SelectDialog<SearchResult> selectDialog = new SelectDialog<SearchResult>(parent, options, true, false, header.getText().isEmpty() ? null : header);
+			SearchResultPreviews.install(selectDialog, provider);
 			selectDialog.setTitle(provider.getName());
 			selectDialog.getMessageLabel().setText("<html>Select best match for \"<b>" + escapeHTML(query) + "</b>\":</html>");
 			selectDialog.getCancelAction().putValue(Action.NAME, "Skip");

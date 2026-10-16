@@ -39,12 +39,12 @@ export LC_ALL="en_US.UTF-8"
 case $PACKAGE_LIBRARY_ARCH in
 	Linux-x86_64|Linux-i686)
 		# i686 or x86_64
-		ARCHIVE_EXTRACTOR="SevenZipNativeBindings"
+		ARCHIVE_EXTRACTOR="SevenZipExecutable"
 		MEDIA_PARSER="libmediainfo"
 	;;
 	*)
 		# armv7l or aarch64
-		ARCHIVE_EXTRACTOR="ApacheVFS"
+		ARCHIVE_EXTRACTOR="SevenZipExecutable"
 		MEDIA_PARSER="ffprobe"
 	;;
 esac
