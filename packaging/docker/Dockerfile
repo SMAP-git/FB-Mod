@@ -23,6 +23,15 @@ RUN mkdir -p /config /media /tmp/.X11-unix \
     && chmod 1777 /tmp/.X11-unix
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY openbox-rc.xml /etc/xdg/openbox/rc.xml
+COPY unraid-icon.svg /usr/share/novnc/app/images/fb-mod.svg
+RUN sed -i \
+        -e 's|<title>noVNC</title>|<title>FB-Mod_by_SMAP</title>|' \
+        -e '/<!-- Icons (see/,/<!-- Apple iOS Safari settings -->/c\    <link rel="icon" type="image/svg+xml" href="app/images/fb-mod.svg">' \
+        /usr/share/novnc/vnc.html \
+    && sed -i \
+        -e 's|const PAGE_TITLE = "noVNC";|const PAGE_TITLE = "FB-Mod_by_SMAP";|' \
+        -e 's|document.title = e.detail.name + " - " + PAGE_TITLE;|document.title = PAGE_TITLE;|' \
+        /usr/share/novnc/app/ui.js
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 ENV HOME=/config \

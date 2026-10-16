@@ -12,7 +12,7 @@ fi
 docker info >/dev/null
 BUILD_DIR="$(mktemp -d /tmp/filebot-docker-build.XXXXXXXX)"
 trap 'rm -rf -- "$BUILD_DIR"' EXIT
-cp "$ROOT_DIR/packaging/docker/"{Dockerfile,docker-entrypoint.sh,openbox-rc.xml} "$BUILD_DIR/"
+cp "$ROOT_DIR/packaging/docker/"{Dockerfile,docker-entrypoint.sh,openbox-rc.xml,unraid-icon.svg} "$BUILD_DIR/"
 cp "$DEB_PACKAGE" "$BUILD_DIR/filebot.deb"
 docker build --platform linux/amd64 --tag "$IMAGE_NAME" "$BUILD_DIR"
 printf 'Created Docker image %s\n' "$IMAGE_NAME"

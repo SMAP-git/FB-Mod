@@ -22,7 +22,9 @@ docker run --rm --name fb-mod \
 ```
 
 Open <http://localhost:6081/vnc.html?autoconnect=true&resize=scale>, or connect a
-VNC client to `localhost:5902`. Replace the example password. `VNC_PASSWORD`
+VNC client to `localhost:5902`. The browser tab shows the FB-Mod_by_SMAP name
+and logo, including after connecting or disconnecting.
+Replace the example password. `VNC_PASSWORD`
 accepts 6-8 ASCII characters; leaving it empty disables authentication.
 To connect without a password, omit the `-e VNC_PASSWORD=changeit` line or use
 `-e VNC_PASSWORD=`. This applies to both native VNC and the browser WebUI.

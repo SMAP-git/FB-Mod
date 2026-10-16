@@ -4,6 +4,7 @@
   <Repository>ghcr.io/smap-git/fb-mod:4.8.5</Repository>
   <Support>https://github.com/SMAP-git/FB-Mod/issues</Support>
   <Project>https://github.com/SMAP-git/FB-Mod</Project>
+  <Icon>https://raw.githubusercontent.com/SMAP-git/FB-Mod/master/packaging/docker/unraid-icon.svg</Icon>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
