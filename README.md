@@ -1,8 +1,31 @@
 # FB Mod
 
-Download from Releases Tab
+## Downloads and builds
 
-See [COMPILING.md](https://github.com/barry-allen07/FB-Mod/blob/master/COMPILING.md) for build instructions
+Download **FB-Mod_by_SMAP 4.8.5** from the
+[GitHub release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.5-smap).
+
+| Platform | Build script | Package |
+| --- | --- | --- |
+| Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.5_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5_amd64.deb) |
+| Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.5-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5-portable.zip) |
+| Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.5-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5-linux-x86_64-portable.tar.xz) |
+
+All three packages bundle Java and JavaFX. Portable packages keep settings beside
+the application; extract them into a writable folder.
+
+* **Debian / Ubuntu:** install the `.deb` with your package manager. Archive
+  extraction requires `7zip` or `p7zip-full`.
+* **Windows:** extract the entire ZIP and run `filebot.launcher.exe`. Archive
+  extraction requires Windows 7-Zip. This package uses Java/JavaFX 11.0.2 and
+  has not been execution-tested on Windows.
+* **Linux portable:** extract the archive and run `./filebot.sh` inside its
+  application folder. This release requires glibc 2.42+, GTK 3, X11/XWayland,
+  and zlib. It includes standalone 7-Zip and rebuilt MediaInfo libraries.
+
+Verify downloads with the release's
+[SHA256SUMS](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/SHA256SUMS).
+See [COMPILING.md](COMPILING.md) for build requirements and instructions.
 
 TheTVDB API v4 credentials can be overridden with the JVM properties
 `-Dnet.filebot.WebServices.TheTVDB.apikey=...` and, if required, `-Dnet.filebot.WebServices.TheTVDB.pin=...`.
