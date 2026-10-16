@@ -30,6 +30,20 @@ See [COMPILING.md](COMPILING.md) for build requirements and instructions.
 TheTVDB API v4 credentials can be overridden with the JVM properties
 `-Dnet.filebot.WebServices.TheTVDB.apikey=...` and, if required, `-Dnet.filebot.WebServices.TheTVDB.pin=...`.
 
+## Docker and Unraid
+
+Build the Debian package, then run `bash packaging/docker/build-docker.sh` to
+create `fb-mod:4.8.5`. It provides a TigerVNC desktop on port `5902` and a noVNC
+browser WebUI on port `6081`, with persistent settings in `/config` and media in
+`/media`. See the [Docker guide](packaging/docker/README.md) and
+[Unraid template](packaging/docker/unraid-template.xml) for setup and image
+transfer instructions. The registry image is `ghcr.io/smap-git/fb-mod:4.8.5`;
+a loadable Docker archive is also available in the
+[release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.5-smap).
+VNC passwords are optional: leave `VNC_PASSWORD` empty for passwordless access.
+Anyone who can reach either port can control the app without a password;
+keep both ports on a trusted network.
+
 ## Screenshots
 
 ### Rename window

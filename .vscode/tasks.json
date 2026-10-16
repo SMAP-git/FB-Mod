@@ -14,6 +14,13 @@
 			"command": "bash build-linux-portable.sh",
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "Build Unraid Docker image",
+			"type": "shell",
+			"command": "bash packaging/docker/build-docker.sh",
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }
