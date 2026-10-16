@@ -59,7 +59,7 @@ before searching TMDb / OMDb. Music mode uses AcoustID audio fingerprints or
 embedded ID3 tags rather than searching a filename.
 
 Movie Mode queries TMDb / OMDb directly for clear title/year filenames, such as
-`Coyote.Vs.Acme.2026.1080p.WEBRip.mp4`, before consulting the legacy movie index.
+`movie.2026.1080p.WEBRip.mp4`, before consulting the legacy movie index.
 Release suffixes are excluded from the query. A unique result fills New Names
 without the intermediate title-entry dialog; ambiguous results still use the
 selection dialog. Unrecognized filenames and empty search results retain the
