@@ -195,6 +195,13 @@ public class UserInterfaceSmokeTest {
 				preferences.setVisible(true);
 				assertEquals("FB-Mod Preferences", preferences.getTitle());
 				assertTrue(preferences.isShowing());
+				List<String> preferenceOptions = descendants(preferences.getContentPane()).stream()
+						.filter(javax.swing.JCheckBox.class::isInstance)
+						.map(javax.swing.JCheckBox.class::cast)
+						.map(javax.swing.JCheckBox::getText)
+						.collect(java.util.stream.Collectors.toList());
+				assertTrue(preferenceOptions.contains("Download poster artwork per episode/movie"));
+				assertTrue(preferenceOptions.contains("Download poster artwork per season (series only)"));
 				assertTrue(preferences.getWidth() > 300);
 				assertTrue(preferences.getHeight() < java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().height);
 				preferences.validate();

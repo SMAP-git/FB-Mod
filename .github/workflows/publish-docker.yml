@@ -2,11 +2,6 @@ name: Publish Docker image
 
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - packaging/docker/**
-      - .github/workflows/publish-docker.yml
 
 permissions:
   contents: read
@@ -22,12 +17,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download v4.8.5-smap --repo "$GITHUB_REPOSITORY" \
-            --pattern FB-Mod_by_SMAP_4.8.5_amd64.deb --pattern SHA256SUMS \
+          set -euo pipefail
+          version="$(sed -n 's/^application.version: *//p' app.properties)"
+          deb="FB-Mod_by_SMAP_${version}_amd64.deb"
+          gh release download "v${version}-smap" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$deb" --pattern SHA256SUMS \
             --dir "$RUNNER_TEMP/payload"
           cd "$RUNNER_TEMP/payload"
-          grep '  FB-Mod_by_SMAP_4.8.5_amd64.deb$' SHA256SUMS | sha256sum --check --strict
-          cp FB-Mod_by_SMAP_4.8.5_amd64.deb "$GITHUB_WORKSPACE/packaging/docker/filebot.deb"
+          grep "  ${deb}\$" SHA256SUMS | sha256sum --check --strict
+          cp "$deb" "$GITHUB_WORKSPACE/packaging/docker/filebot.deb"
       - name: Log in to GitHub Container Registry
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,9 +33,10 @@ jobs:
       - name: Build and publish
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          version="$(sed -n 's/^application.version: *//p' app.properties)"
           docker build --pull --platform linux/amd64 \
             --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
             --label "org.opencontainers.image.revision=$GITHUB_SHA" \
-            --tag "$image:4.8.5" --tag "$image:latest" packaging/docker
-          docker push "$image:4.8.5"
+            --tag "$image:$version" --tag "$image:latest" packaging/docker
+          docker push "$image:$version"
           docker push "$image:latest"

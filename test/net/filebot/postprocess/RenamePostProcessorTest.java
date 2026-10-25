@@ -13,7 +13,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import net.filebot.postprocess.RenamePostProcessor.Action;
+import net.filebot.web.Episode;
 import net.filebot.web.Movie;
+import net.filebot.web.SeriesInfo;
 import net.filebot.web.SimpleDate;
 
 public class RenamePostProcessorTest {
@@ -87,6 +89,45 @@ public class RenamePostProcessorTest {
 		assertEquals(20, javax.imageio.ImageIO.read(poster).getWidth());
 		processor.process(video, new Movie("Movie", 2025), EnumSet.of(Action.Artwork), Locale.ENGLISH);
 		assertEquals(1, calls[0]);
+	}
+
+	@Test
+	public void downloadsOneSeasonPosterPerSeasonAndPreservesIt() throws Exception {
+		File video = temporary.newFile("Episode.mkv");
+		File source = temporary.newFile("season.png");
+		javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(20, 30, java.awt.image.BufferedImage.TYPE_INT_ARGB), "png", source);
+		SeriesInfo series = new SeriesInfo();
+		series.setDatabase("test");
+		series.setId(123);
+		Episode episode = new Episode("Series", 2, 1, "Episode", null, null, null, null, series);
+		int[] calls = { 0 };
+		RenamePostProcessor processor = new RenamePostProcessor() {
+			@Override
+			protected java.net.URL getSeasonPoster(Episode info, Locale locale) throws Exception {
+				calls[0]++;
+				return source.toURI().toURL();
+			}
+		};
+		assertTrue(processor.process(video, episode, EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH).isEmpty());
+		File poster = new File(temporary.getRoot(), "Season 02-poster.jpg");
+		assertEquals(20, javax.imageio.ImageIO.read(poster).getWidth());
+		processor.process(video, episode, EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH);
+		assertEquals(1, calls[0]);
+	}
+
+	@Test
+	public void seasonArtworkSkipsMoviesAndSpecialEpisodes() throws Exception {
+		File video = temporary.newFile("Video.mkv");
+		RenamePostProcessor processor = new RenamePostProcessor() {
+			@Override
+			protected java.net.URL getSeasonPoster(Episode info, Locale locale) {
+				fail("Season artwork should not be requested for specials");
+				return null;
+			}
+		};
+		assertTrue(processor.process(video, new Movie("Movie", 2025), EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH).isEmpty());
+		assertTrue(processor.process(video, new Episode("Series", null, null, "Special"), EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH).isEmpty());
+		assertEquals(1, temporary.getRoot().list().length);
 	}
 
 	@Test

@@ -18,7 +18,7 @@ docker run --rm --name fb-mod \
   -e VNC_PASSWORD=changeit \
   -v "$HOME/fb-mod-config:/config" \
   -v "/path/to/media:/media:rw" \
-  fb-mod:4.8.5
+  fb-mod:4.8.6
 ```
 
 Open <http://localhost:6081/vnc.html?autoconnect=true&resize=scale>, or connect a
@@ -42,29 +42,29 @@ writable by the configured UID/GID.
 ## Unraid
 
 Use [unraid-template.xml](unraid-template.xml). The template uses
-`ghcr.io/smap-git/fb-mod:4.8.5` from GitHub Container Registry:
+`ghcr.io/smap-git/fb-mod:4.8.6` from GitHub Container Registry:
 
 ```sh
-docker pull ghcr.io/smap-git/fb-mod:4.8.5
+docker pull ghcr.io/smap-git/fb-mod:4.8.6
 ```
 
 Alternatively, download the
-[loadable image archive](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5-unraid-docker.tar.gz)
-from the GitHub release. It loads as `fb-mod:4.8.5`; set the template's
-**Repository** field to `fb-mod:4.8.5` when using this offline alternative.
+[loadable image archive](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6-unraid-docker.tar.gz)
+from the GitHub release. It loads as `fb-mod:4.8.6`; set the template's
+**Repository** field to `fb-mod:4.8.6` when using this offline alternative.
 You can also transfer an image from the build machine:
 
 ```sh
-docker save fb-mod:4.8.5 | gzip > fb-mod-4.8.5-docker.tar.gz
+docker save fb-mod:4.8.6 | gzip > fb-mod-4.8.6-docker.tar.gz
 # On Unraid, after copying the archive:
-gunzip -c fb-mod-4.8.5-docker.tar.gz | docker load
+gunzip -c fb-mod-4.8.6-docker.tar.gz | docker load
 ```
 
 The locally exported build is
-`dist/FB-Mod_by_SMAP_4.8.5-unraid-docker.tar.gz`. To load that file on Unraid:
+`dist/FB-Mod_by_SMAP_4.8.6-unraid-docker.tar.gz`. To load that file on Unraid:
 
 ```sh
-gunzip -c FB-Mod_by_SMAP_4.8.5-unraid-docker.tar.gz | docker load
+gunzip -c FB-Mod_by_SMAP_4.8.6-unraid-docker.tar.gz | docker load
 ```
 
 Copy the template into `/boot/config/plugins/dockerMan/templates-user/`,
@@ -78,7 +78,8 @@ Do not enable privileged mode.
 ## Publishing
 
 The [GitHub Actions workflow](../../.github/workflows/publish-docker.yml) builds
-from the checksum-verified Debian release asset and publishes the `4.8.5` and
-`latest` tags to GHCR. It runs when Docker packaging changes reach `master` or
-can be started manually. The GHCR package must be public for anonymous Unraid
-pulls; package visibility is controlled in GitHub's package settings.
+from the checksum-verified Debian release asset and publishes the versioned and
+`latest` tags to GHCR. Start it manually after publishing a release so the
+matching Debian asset and checksum are available. The GHCR package must be
+public for anonymous Unraid pulls; package visibility is controlled in GitHub's
+package settings.

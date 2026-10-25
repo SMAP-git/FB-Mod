@@ -42,7 +42,8 @@ import net.filebot.web.SubtitleDescriptor;
 
 public class RenamePostProcessor {
 	public enum Action {
-		Artwork("Download poster artwork"),
+		Artwork("Download poster artwork per episode/movie"),
+		SeasonArtwork("Download poster artwork per season (series only)"),
 		Subtitles("Download subtitles (OpenSubtitles.com)"),
 		Metadata("Write metadata (.nfo)"),
 		FileDate("Set modified date to air/release date");
@@ -78,6 +79,11 @@ public class RenamePostProcessor {
 				switch (action) {
 				case Artwork:
 					writeArtwork(destination, info, locale);
+					break;
+				case SeasonArtwork:
+					if (info instanceof Episode && ((Episode) info).getSeason() != null) {
+						writeSeasonArtwork(destination, (Episode) info, locale);
+					}
 					break;
 				case Subtitles:
 					writeSubtitles(destination, info, locale);
@@ -122,6 +128,9 @@ public class RenamePostProcessor {
 		if (series == null) {
 			throw new IOException("Series ID is missing");
 		}
+		if (series.getId() == null) {
+			throw new IOException("Series ID is missing");
+		}
 		SearchResult result = new SearchResult(series.getId(), episode.getSeriesName());
 		switch (series.getDatabase()) {
 		case "TheMovieDB::TV":
@@ -137,6 +146,26 @@ public class RenamePostProcessor {
 		}
 	}
 
+	protected URL getSeasonPoster(Episode episode, Locale locale) throws Exception {
+		SeriesInfo series = episode.getSeriesInfo();
+		if (series == null) {
+			throw new IOException("Series ID is missing");
+		}
+		SearchResult result = new SearchResult(series.getId(), episode.getSeriesName());
+		switch (series.getDatabase()) {
+		case "TheMovieDB::TV":
+			return WebServices.TheMovieDB_TV.getSeasonPoster(result, episode.getSeason(), locale);
+		case "TheTVDB":
+			return WebServices.TheTVDB.getArtwork(series.getId(), "season", locale).stream()
+					.filter(artwork -> artwork.matches(episode.getSeason()))
+					.map(net.filebot.web.Artwork::getUrl)
+					.findFirst()
+					.orElse(null);
+		default:
+			throw new IOException("No season artwork provider for " + series.getDatabase());
+		}
+	}
+
 	private void writeArtwork(File destination, Object info, Locale locale) throws Exception {
 		Path target = sidecar(destination, "-poster.jpg");
 		if (Files.exists(target)) {
@@ -146,6 +175,22 @@ public class RenamePostProcessor {
 		if (poster == null) {
 			throw new IOException("No poster artwork available");
 		}
+		writeArtwork(poster, target);
+	}
+
+	private void writeSeasonArtwork(File destination, Episode episode, Locale locale) throws Exception {
+		Path target = new File(destination.getParentFile(), String.format(Locale.ROOT, "Season %02d-poster.jpg", episode.getSeason())).toPath();
+		if (Files.exists(target)) {
+			return;
+		}
+		URL poster = getSeasonPoster(episode, locale);
+		if (poster == null) {
+			throw new IOException("No season poster artwork available");
+		}
+		writeArtwork(poster, target);
+	}
+
+	private void writeArtwork(URL poster, Path target) throws Exception {
 		URLConnection connection = poster.openConnection();
 		connection.setConnectTimeout(20000);
 		connection.setReadTimeout(40000);

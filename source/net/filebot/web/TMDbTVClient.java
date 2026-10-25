@@ -104,6 +104,11 @@ public class TMDbTVClient extends AbstractEpisodeListProvider {
 		return tmdb.getPoster("tv", series.getId(), locale);
 	}
 
+	public java.net.URL getSeasonPoster(SearchResult series, int season, Locale locale) throws Exception {
+		Object response = tmdb.request("tv/" + series.getId() + "/season/" + season, emptyMap(), locale);
+		return tmdb.resolveImage(getString(response, "poster_path"));
+	}
+
 	@Override
 	protected SeriesData fetchSeriesData(SearchResult series, SortOrder sortOrder, Locale locale) throws Exception {
 		// http://api.themoviedb.org/3/tv/id

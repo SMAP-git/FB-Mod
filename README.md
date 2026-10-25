@@ -2,14 +2,14 @@
 
 ## Downloads and builds
 
-Download **FB-Mod_by_SMAP 4.8.5** from the
-[GitHub release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.5-smap).
+Download **FB-Mod_by_SMAP 4.8.6** from the
+[GitHub release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.6-smap).
 
 | Platform | Build script | Package |
 | --- | --- | --- |
-| Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.5_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5_amd64.deb) |
-| Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.5-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5-portable.zip) |
-| Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.5-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/FB-Mod_by_SMAP_4.8.5-linux-x86_64-portable.tar.xz) |
+| Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.6_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6_amd64.deb) |
+| Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.6-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6-portable.zip) |
+| Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.6-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6-linux-x86_64-portable.tar.xz) |
 
 All three packages bundle Java and JavaFX. Portable packages keep settings beside
 the application; extract them into a writable folder.
@@ -24,7 +24,7 @@ the application; extract them into a writable folder.
   and zlib. It includes standalone 7-Zip and rebuilt MediaInfo libraries.
 
 Verify downloads with the release's
-[SHA256SUMS](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.5-smap/SHA256SUMS).
+[SHA256SUMS](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/SHA256SUMS).
 See [COMPILING.md](COMPILING.md) for build requirements and instructions.
 
 TheTVDB API v4 credentials can be overridden with the JVM properties
@@ -33,13 +33,13 @@ TheTVDB API v4 credentials can be overridden with the JVM properties
 ## Docker and Unraid
 
 Build the Debian package, then run `bash packaging/docker/build-docker.sh` to
-create `fb-mod:4.8.5`. It provides a TigerVNC desktop on port `5902` and a noVNC
+create `fb-mod:4.8.6`. It provides a TigerVNC desktop on port `5902` and a noVNC
 browser WebUI on port `6081`, with persistent settings in `/config` and media in
 `/media`. See the [Docker guide](packaging/docker/README.md) and
 [Unraid template](packaging/docker/unraid-template.xml) for setup and image
-transfer instructions. The registry image is `ghcr.io/smap-git/fb-mod:4.8.5`;
+transfer instructions. The registry image is `ghcr.io/smap-git/fb-mod:4.8.6`;
 a loadable Docker archive is also available in the
-[release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.5-smap).
+[release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.6-smap).
 VNC passwords are optional: leave `VNC_PASSWORD` empty for passwordless access.
 Anyone who can reach either port can control the app without a password;
 keep both ports on a trusted network.
@@ -48,9 +48,9 @@ keep both ports on a trusted network.
 
 ### Rename window
 
-FB-Mod_by_SMAP 4.8.5 with the Original Files and New Names panels.
+FB-Mod_by_SMAP rename window with the Original Files and New Names panels.
 
-![FB-Mod_by_SMAP 4.8.5 Rename window](docs/screenshots/rename-window.png)
+![FB-Mod_by_SMAP Rename window](docs/screenshots/rename-window.png)
 
 ### Preferences
 
@@ -107,9 +107,11 @@ Open **Rename > Settings (gear) > Preferences...** or the gear button in
   every theme, including dark system themes.
 * After-rename actions are opt-in and disabled by default. They run only for
   successfully renamed movies/episodes, not unmatched files or music.
-* Artwork writes `<video-name>-poster.jpg`. Metadata writes `<video-name>.nfo`
-  containing the matched title, year or episode numbers, date, and known IDs.
-  Existing extended-attribute metadata behaviour is unchanged.
+* Per episode/movie artwork writes `<video-name>-poster.jpg`. Per-season artwork
+  writes `Season NN-poster.jpg` once per season for supported series providers.
+  Metadata writes `<video-name>.nfo` containing the matched title, year or
+  episode numbers, date, and known IDs. Existing extended-attribute metadata
+  behaviour is unchanged.
 * Subtitles write `<video-name>.<language>.srt`. Hash matches are preferred;
   otherwise results use the matched movie ID or series/season/episode and
   provider download ranking. Review name-based matches if release timing differs.
