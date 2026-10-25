@@ -48,13 +48,14 @@ keep both ports on a trusted network.
 
 ### Rename window
 
-FB-Mod_by_SMAP rename window with the Original Files and New Names panels.
+FB-Mod_by_SMAP 4.8.6 rename window with the Original Files and New Names panels.
 
 ![FB-Mod_by_SMAP Rename window](docs/screenshots/rename-window.png)
 
 ### Preferences
 
-Theme selection, optional after-rename actions, and provider credentials.
+Theme selection, separate per-episode/movie and per-season poster options,
+optional after-rename actions, and provider credentials.
 
 ![FB-Mod preferences showing themes, after-rename actions, and empty provider credential fields](docs/screenshots/preferences.png)
 
