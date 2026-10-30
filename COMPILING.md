@@ -45,7 +45,7 @@ Output files in /dist
 
 Run `./build-windows-portable.sh` on Linux x86_64 with Java 11, Ant, curl and
 sha256sum installed. It verifies Ivy and the Windows Java/JavaFX downloads,
-builds the current source and writes `dist/FB-Mod_by_SMAP_4.8.6-portable.zip`.
+builds the current source and writes `dist/FB-Mod_by_SMAP_4.8.7-portable.zip`.
 PowerShell, Wine and Windows build tools are not needed on the build host.
 
 Extract the entire ZIP into a writable folder on Windows x64 and run
@@ -62,7 +62,7 @@ Execution on Windows must be tested on a Windows machine.
 Run `bash build-linux-portable.sh` on Linux x86_64 with the Debian build
 requirements below, `dpkg-deb`, CMake 3.15 or newer, Make, G++, pkg-config, and
 zlib development headers.
-It writes `dist/FB-Mod_by_SMAP_4.8.6-linux-x86_64-portable.tar.xz`.
+It writes `dist/FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz`.
 Extract the archive into a writable folder and run `./filebot.sh` from the
 extracted application directory. CLI arguments can be passed to the same
 launcher, for example `./filebot.sh -version`.

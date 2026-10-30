@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>FB-Mod</Name>
-  <Repository>ghcr.io/smap-git/fb-mod:4.8.6</Repository>
+  <Repository>ghcr.io/smap-git/fb-mod:4.8.7</Repository>
   <Support>https://github.com/SMAP-git/FB-Mod/issues</Support>
   <Project>https://github.com/SMAP-git/FB-Mod</Project>
   <Icon>https://raw.githubusercontent.com/SMAP-git/FB-Mod/master/packaging/docker/unraid-icon.svg</Icon>

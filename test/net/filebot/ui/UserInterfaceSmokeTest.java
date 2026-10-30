@@ -226,6 +226,73 @@ public class UserInterfaceSmokeTest {
 	}
 
 	@Test
+	public void artworkFilenameControlsToggleAndPersistIndependently() throws Exception {
+		SwingUtilities.invokeAndWait(() -> {
+			java.util.prefs.Preferences settings = net.filebot.postprocess.RenamePostProcessor.preferences();
+			java.util.Map<String, String> saved = new java.util.LinkedHashMap<String, String>();
+			for (String key : new String[] { "ArtworkDefaultFilename", "ArtworkFilename", "SeasonArtworkDefaultFilename", "SeasonArtworkFilename", "Subtitles", "language" }) {
+				saved.put(key, settings.get(key, null));
+				settings.remove(key);
+			}
+			PreferencesDialog dialog = null;
+			PreferencesDialog reopened = null;
+			try {
+				dialog = new PreferencesDialog(null);
+				List<Component> components = descendants(dialog.getContentPane());
+				javax.swing.JCheckBox artworkDefault = components.stream().filter(it -> "ArtworkDefaultFilename".equals(it.getName())).map(javax.swing.JCheckBox.class::cast).findFirst().orElseThrow();
+				javax.swing.JCheckBox seasonDefault = components.stream().filter(it -> "SeasonArtworkDefaultFilename".equals(it.getName())).map(javax.swing.JCheckBox.class::cast).findFirst().orElseThrow();
+				javax.swing.JTextField artworkName = components.stream().filter(it -> "ArtworkFilename".equals(it.getName())).map(javax.swing.JTextField.class::cast).findFirst().orElseThrow();
+				javax.swing.JTextField seasonName = components.stream().filter(it -> "SeasonArtworkFilename".equals(it.getName())).map(javax.swing.JTextField.class::cast).findFirst().orElseThrow();
+				assertTrue(artworkDefault.isSelected());
+				assertTrue(seasonDefault.isSelected());
+				assertFalse(artworkName.isEnabled());
+				assertFalse(seasonName.isEnabled());
+				artworkDefault.doClick();
+				assertTrue(artworkName.isEnabled());
+				assertFalse(seasonName.isEnabled());
+				artworkName.setText("poster.jpg");
+				seasonDefault.doClick();
+				assertTrue(seasonName.isEnabled());
+				seasonName.setText("season.jpeg");
+				seasonDefault.doClick();
+				assertFalse(seasonName.isEnabled());
+				assertEquals("season.jpeg", seasonName.getText());
+				components.stream().filter(JButton.class::isInstance).map(JButton.class::cast).filter(it -> "Save".equals(it.getText())).findFirst().orElseThrow().doClick();
+				assertFalse(dialog.isDisplayable());
+				assertFalse(settings.getBoolean("ArtworkDefaultFilename", true));
+				assertTrue(settings.getBoolean("SeasonArtworkDefaultFilename", false));
+				assertEquals("poster.jpg", settings.get("ArtworkFilename", ""));
+				assertEquals("season.jpeg", settings.get("SeasonArtworkFilename", ""));
+				reopened = new PreferencesDialog(null);
+				for (Component component : descendants(reopened.getContentPane())) {
+					if ("ArtworkFilename".equals(component.getName())) {
+						assertTrue(component.isEnabled());
+						assertEquals("poster.jpg", ((javax.swing.JTextField) component).getText());
+					}
+					if ("SeasonArtworkFilename".equals(component.getName())) {
+						assertFalse(component.isEnabled());
+						assertEquals("season.jpeg", ((javax.swing.JTextField) component).getText());
+					}
+				}
+			} finally {
+				if (dialog != null) {
+					dialog.dispose();
+				}
+				if (reopened != null) {
+					reopened.dispose();
+				}
+				saved.forEach((key, value) -> {
+					if (value == null) {
+						settings.remove(key);
+					} else {
+						settings.put(key, value);
+					}
+				});
+			}
+		});
+	}
+
+	@Test
 	public void savingTheTVDBCredentialsUpdatesExistingMenu() throws Exception {
 		SwingUtilities.invokeAndWait(() -> {
 			java.util.prefs.Preferences settings = TheTVDBClient.preferences();

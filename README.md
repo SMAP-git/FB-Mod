@@ -2,14 +2,14 @@
 
 ## Downloads and builds
 
-Download **FB-Mod_by_SMAP 4.8.6** from the
-[GitHub release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.6-smap).
+Download **FB-Mod_by_SMAP 4.8.7** from the
+[GitHub release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.7-smap).
 
 | Platform | Build script | Package |
 | --- | --- | --- |
-| Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.6_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6_amd64.deb) |
-| Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.6-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6-portable.zip) |
-| Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.6-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/FB-Mod_by_SMAP_4.8.6-linux-x86_64-portable.tar.xz) |
+| Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.7_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7_amd64.deb) |
+| Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-portable.zip) |
+| Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz) |
 
 All three packages bundle Java and JavaFX. Portable packages keep settings beside
 the application; extract them into a writable folder.
@@ -24,7 +24,7 @@ the application; extract them into a writable folder.
   and zlib. It includes standalone 7-Zip and rebuilt MediaInfo libraries.
 
 Verify downloads with the release's
-[SHA256SUMS](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.6-smap/SHA256SUMS).
+[SHA256SUMS](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/SHA256SUMS).
 See [COMPILING.md](COMPILING.md) for build requirements and instructions.
 
 TheTVDB API v4 credentials can be overridden with the JVM properties
@@ -33,13 +33,13 @@ TheTVDB API v4 credentials can be overridden with the JVM properties
 ## Docker and Unraid
 
 Build the Debian package, then run `bash packaging/docker/build-docker.sh` to
-create `fb-mod:4.8.6`. It provides a TigerVNC desktop on port `5902` and a noVNC
+create `fb-mod:4.8.7`. It provides a TigerVNC desktop on port `5902` and a noVNC
 browser WebUI on port `6081`, with persistent settings in `/config` and media in
 `/media`. See the [Docker guide](packaging/docker/README.md) and
 [Unraid template](packaging/docker/unraid-template.xml) for setup and image
-transfer instructions. The registry image is `ghcr.io/smap-git/fb-mod:4.8.6`;
+transfer instructions. The registry image is `ghcr.io/smap-git/fb-mod:4.8.7`;
 a loadable Docker archive is also available in the
-[release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.6-smap).
+[release](https://github.com/SMAP-git/FB-Mod/releases/tag/v4.8.7-smap).
 VNC passwords are optional: leave `VNC_PASSWORD` empty for passwordless access.
 Anyone who can reach either port can control the app without a password;
 keep both ports on a trusted network.
@@ -110,6 +110,10 @@ Open **Rename > Settings (gear) > Preferences...** or the gear button in
   successfully renamed movies/episodes, not unmatched files or music.
 * Per episode/movie artwork writes `<video-name>-poster.jpg`. Per-season artwork
   writes `Season NN-poster.jpg` once per season for supported series providers.
+  Each artwork option has a **Use default filename** checkbox, checked by default.
+  Uncheck it to enter a custom `.jpg` or `.jpeg` filename (without folders).
+  The two naming preferences are saved independently. Custom artwork is still
+  saved as JPEG beside the renamed video; existing files are never overwritten.
   Metadata writes `<video-name>.nfo` containing the matched title, year or
   episode numbers, date, and known IDs. Existing extended-attribute metadata
   behaviour is unchanged.

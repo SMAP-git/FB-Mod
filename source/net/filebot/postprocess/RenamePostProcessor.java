@@ -167,7 +167,7 @@ public class RenamePostProcessor {
 	}
 
 	private void writeArtwork(File destination, Object info, Locale locale) throws Exception {
-		Path target = sidecar(destination, "-poster.jpg");
+		Path target = artworkTarget(destination, Action.Artwork, sidecar(destination, "-poster.jpg"));
 		if (Files.exists(target)) {
 			return;
 		}
@@ -179,7 +179,7 @@ public class RenamePostProcessor {
 	}
 
 	private void writeSeasonArtwork(File destination, Episode episode, Locale locale) throws Exception {
-		Path target = new File(destination.getParentFile(), String.format(Locale.ROOT, "Season %02d-poster.jpg", episode.getSeason())).toPath();
+		Path target = artworkTarget(destination, Action.SeasonArtwork, new File(destination.getParentFile(), String.format(Locale.ROOT, "Season %02d-poster.jpg", episode.getSeason())).toPath());
 		if (Files.exists(target)) {
 			return;
 		}
@@ -188,6 +188,21 @@ public class RenamePostProcessor {
 			throw new IOException("No season poster artwork available");
 		}
 		writeArtwork(poster, target);
+	}
+
+	private static Path artworkTarget(File destination, Action action, Path defaultTarget) {
+		if (preferences().getBoolean(action.name() + "DefaultFilename", true)) {
+			return defaultTarget;
+		}
+		return new File(destination.getParentFile(), validateArtworkFilename(preferences().get(action.name() + "Filename", ""))).toPath();
+	}
+
+	public static String validateArtworkFilename(String filename) {
+		String name = filename.trim();
+		if (name.isEmpty() || java.util.regex.Pattern.compile("[<>:\"/\\\\|?*\\p{Cntrl}]").matcher(name).find() || !(name.toLowerCase(Locale.ROOT).endsWith(".jpg") || name.toLowerCase(Locale.ROOT).endsWith(".jpeg"))) {
+			throw new IllegalArgumentException("Enter a filename ending in .jpg or .jpeg, without folders or these characters: < > : \" / \\ | ? *");
+		}
+		return name;
 	}
 
 	private void writeArtwork(URL poster, Path target) throws Exception {

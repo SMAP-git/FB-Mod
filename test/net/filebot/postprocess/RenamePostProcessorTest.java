@@ -6,8 +6,12 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -21,6 +25,30 @@ import net.filebot.web.SimpleDate;
 public class RenamePostProcessorTest {
 	@Rule
 	public TemporaryFolder temporary = new TemporaryFolder();
+
+	private final Map<String, String> artworkSettings = new LinkedHashMap<String, String>();
+
+	@Before
+	public void resetArtworkNaming() {
+		for (Action action : EnumSet.of(Action.Artwork, Action.SeasonArtwork)) {
+			for (String suffix : new String[] { "DefaultFilename", "Filename" }) {
+				String key = action.name() + suffix;
+				artworkSettings.put(key, RenamePostProcessor.preferences().get(key, null));
+				RenamePostProcessor.preferences().remove(key);
+			}
+		}
+	}
+
+	@After
+	public void restoreArtworkNaming() {
+		artworkSettings.forEach((key, value) -> {
+			if (value == null) {
+				RenamePostProcessor.preferences().remove(key);
+			} else {
+				RenamePostProcessor.preferences().put(key, value);
+			}
+		});
+	}
 
 	@Test
 	public void metadataEscapesTextAndPreservesExistingSidecar() throws Exception {
@@ -128,6 +156,78 @@ public class RenamePostProcessorTest {
 		assertTrue(processor.process(video, new Movie("Movie", 2025), EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH).isEmpty());
 		assertTrue(processor.process(video, new Episode("Series", null, null, "Special"), EnumSet.of(Action.SeasonArtwork), Locale.ENGLISH).isEmpty());
 		assertEquals(1, temporary.getRoot().list().length);
+	}
+
+	@Test
+	public void customArtworkNamesAreIndependentAndPreserveExistingFiles() throws Exception {
+		File video = temporary.newFile("Episode.mkv");
+		File source = temporary.newFile("image.png");
+		javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(20, 30, java.awt.image.BufferedImage.TYPE_INT_ARGB), "png", source);
+		int[] calls = { 0, 0 };
+		RenamePostProcessor processor = new RenamePostProcessor() {
+			@Override
+			protected java.net.URL getPoster(Object info, Locale locale) throws Exception {
+				calls[0]++;
+				return source.toURI().toURL();
+			}
+
+			@Override
+			protected java.net.URL getSeasonPoster(Episode info, Locale locale) throws Exception {
+				calls[1]++;
+				return source.toURI().toURL();
+			}
+		};
+		Episode episode = new Episode("Series", 2, 1, "Episode");
+		RenamePostProcessor.preferences().putBoolean("ArtworkDefaultFilename", false);
+		RenamePostProcessor.preferences().put("ArtworkFilename", "poster.jpeg");
+		EnumSet<Action> actions = EnumSet.of(Action.Artwork, Action.SeasonArtwork);
+		assertTrue(processor.process(video, episode, actions, Locale.ENGLISH).isEmpty());
+		assertEquals(20, javax.imageio.ImageIO.read(new File(temporary.getRoot(), "poster.jpeg")).getWidth());
+		assertTrue(new File(temporary.getRoot(), "Season 02-poster.jpg").isFile());
+		assertFalse(new File(temporary.getRoot(), "Episode-poster.jpg").exists());
+
+		RenamePostProcessor.preferences().putBoolean("SeasonArtworkDefaultFilename", false);
+		RenamePostProcessor.preferences().put("SeasonArtworkFilename", "season-cover.jpg");
+		assertTrue(processor.process(video, episode, actions, Locale.ENGLISH).isEmpty());
+		File seasonPoster = new File(temporary.getRoot(), "season-cover.jpg");
+		assertEquals(20, javax.imageio.ImageIO.read(seasonPoster).getWidth());
+		Files.writeString(seasonPoster.toPath(), "existing");
+		assertTrue(processor.process(video, episode, actions, Locale.ENGLISH).isEmpty());
+		assertEquals("existing", Files.readString(seasonPoster.toPath()));
+		assertArrayEquals(new int[] { 1, 2 }, calls);
+
+		RenamePostProcessor.preferences().putBoolean("ArtworkDefaultFilename", true);
+		assertTrue(processor.process(video, new Movie("Movie", 2025), EnumSet.of(Action.Artwork), Locale.ENGLISH).isEmpty());
+		assertTrue(new File(temporary.getRoot(), "Episode-poster.jpg").isFile());
+	}
+
+	@Test
+	public void rejectsInvalidArtworkNames() {
+		for (String name : new String[] { "", "  ", "../poster.jpg", "folder/poster.jpg", "folder\\poster.jpg", "/poster.jpg", "poster.png", "poster", "bad\nname.jpg", "bad:name.jpg" }) {
+			try {
+				RenamePostProcessor.validateArtworkFilename(name);
+				fail("Accepted invalid filename: " + name);
+			} catch (IllegalArgumentException expected) {
+				assertTrue(expected.getMessage().contains("filename"));
+			}
+		}
+		assertEquals("Poster.JPG", RenamePostProcessor.validateArtworkFilename(" Poster.JPG "));
+	}
+
+	@Test
+	public void invalidCustomNameReportsFailureWithoutDownloading() throws Exception {
+		File video = temporary.newFile("Movie.mkv");
+		RenamePostProcessor.preferences().putBoolean("ArtworkDefaultFilename", false);
+		RenamePostProcessor.preferences().put("ArtworkFilename", "../poster.jpg");
+		RenamePostProcessor processor = new RenamePostProcessor() {
+			@Override
+			protected java.net.URL getPoster(Object info, Locale locale) {
+				fail("Invalid custom filenames must be rejected before downloading");
+				return null;
+			}
+		};
+		assertEquals(1, processor.process(video, new Movie("Movie", 2025), EnumSet.of(Action.Artwork, Action.Metadata), Locale.ENGLISH).size());
+		assertTrue(new File(temporary.getRoot(), "Movie.nfo").isFile());
 	}
 
 	@Test

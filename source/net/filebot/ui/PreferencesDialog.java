@@ -36,10 +36,27 @@ public class PreferencesDialog extends JDialog {
 
 		add(new JLabel("After rename (movies and episodes):"), "span 2, gapy 12");
 		Map<Action, JCheckBox> actions = new EnumMap<Action, JCheckBox>(Action.class);
+		Map<Action, JCheckBox> defaultFilenames = new EnumMap<Action, JCheckBox>(Action.class);
+		Map<Action, JTextField> artworkFilenames = new EnumMap<Action, JTextField>(Action.class);
 		for (Action action : Action.values()) {
 			JCheckBox checkbox = new JCheckBox(action.label, RenamePostProcessor.preferences().getBoolean(action.name(), false));
 			actions.put(action, checkbox);
 			add(checkbox, "span 2");
+			if (action == Action.Artwork || action == Action.SeasonArtwork) {
+				JCheckBox defaultFilename = new JCheckBox("Use default filename", RenamePostProcessor.preferences().getBoolean(action.name() + "DefaultFilename", true));
+				JTextField filename = new JTextField(RenamePostProcessor.preferences().get(action.name() + "Filename", ""), 20);
+				defaultFilename.setName(action.name() + "DefaultFilename");
+				filename.setName(action.name() + "Filename");
+				String hint = action == Action.Artwork ? "<video-name>-poster.jpg" : "Season NN-poster.jpg";
+				defaultFilename.setToolTipText("Default: " + hint);
+				filename.setToolTipText("Custom filename including .jpg or .jpeg (no folders)");
+				filename.setEnabled(!defaultFilename.isSelected());
+				defaultFilename.addItemListener(evt -> filename.setEnabled(!defaultFilename.isSelected()));
+				defaultFilenames.put(action, defaultFilename);
+				artworkFilenames.put(action, filename);
+				add(defaultFilename);
+				add(filename);
+			}
 		}
 		add(new JLabel("Existing sidecar files are never overwritten."), "span 2");
 		JTextField language = new JTextField(RenamePostProcessor.preferences().get("language", "en"), 6);
@@ -83,6 +100,17 @@ public class PreferencesDialog extends JDialog {
 		add(cancel, "tag cancel");
 		JButton save = new JButton("Save");
 		save.addActionListener(evt -> {
+			for (Action action : artworkFilenames.keySet()) {
+				if (!defaultFilenames.get(action).isSelected()) {
+					try {
+						RenamePostProcessor.validateArtworkFilename(artworkFilenames.get(action).getText());
+					} catch (IllegalArgumentException e) {
+						JOptionPane.showMessageDialog(this, action.label + ":\n" + e.getMessage(), "Invalid artwork filename", JOptionPane.WARNING_MESSAGE);
+						artworkFilenames.get(action).requestFocusInWindow();
+						return;
+					}
+				}
+			}
 			String code = language.getText().trim().toLowerCase(Locale.ROOT);
 			if (!java.util.Arrays.asList(Locale.getISOLanguages()).contains(code)) {
 				JOptionPane.showMessageDialog(this, "Enter a supported two-letter language code (e.g. en or pt).", "Invalid subtitle language", JOptionPane.WARNING_MESSAGE);
@@ -100,6 +128,8 @@ public class PreferencesDialog extends JDialog {
 			}
 			((Theme) theme.getSelectedItem()).save();
 			actions.forEach((action, checkbox) -> RenamePostProcessor.preferences().putBoolean(action.name(), checkbox.isSelected()));
+			defaultFilenames.forEach((action, checkbox) -> RenamePostProcessor.preferences().putBoolean(action.name() + "DefaultFilename", checkbox.isSelected()));
+			artworkFilenames.forEach((action, field) -> RenamePostProcessor.preferences().put(action.name() + "Filename", field.getText().trim()));
 			RenamePostProcessor.preferences().put("language", code);
 			subtitleSettings.put("apiKey", new String(apiKey.getPassword()).trim());
 			subtitleSettings.put("username", username.getText().trim());
