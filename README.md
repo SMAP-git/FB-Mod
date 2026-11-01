@@ -12,7 +12,7 @@ Download **FB-Mod_by_SMAP 4.8.7** from the
 | Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-portable.zip) |
 | Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz) |
 
-All three packages bundle Java and JavaFX. Portable packages keep settings beside
+All packages bundle Java and JavaFX. Portable packages keep settings beside
 the application; extract them into a writable folder.
 
 * **Debian / Ubuntu:** install the `.deb` with your package manager. Archive
