@@ -8,6 +8,7 @@ Download **FB-Mod_by_SMAP 4.8.7** from the
 | Platform | Build script | Package |
 | --- | --- | --- |
 | Debian / Ubuntu x86_64 | [`build-deb.sh`](build-deb.sh) (`./build-deb.sh`) | [FB-Mod_by_SMAP_4.8.7_amd64.deb](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7_amd64.deb) |
+| Windows x64 installer | — | [FB-Mod_by_SMAP_4.8.7_x64.msi](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7_x64.msi) |
 | Windows x64 portable | [`build-windows-portable.sh`](build-windows-portable.sh) (`./build-windows-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-portable.zip](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-portable.zip) |
 | Linux x86_64 portable | [`build-linux-portable.sh`](build-linux-portable.sh) (`bash build-linux-portable.sh`) | [FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz](https://github.com/SMAP-git/FB-Mod/releases/download/v4.8.7-smap/FB-Mod_by_SMAP_4.8.7-linux-x86_64-portable.tar.xz) |
 
@@ -16,9 +17,10 @@ the application; extract them into a writable folder.
 
 * **Debian / Ubuntu:** install the `.deb` with your package manager. Archive
   extraction requires `7zip` or `p7zip-full`.
-* **Windows:** extract the entire ZIP and run `filebot.launcher.exe`. Archive
-  extraction requires Windows 7-Zip. This package uses Java/JavaFX 11.0.2 and
-  has not been execution-tested on Windows.
+* **Windows installer:** run the `.msi` and follow the setup prompts.
+* **Windows portable:** extract the entire ZIP and run `filebot.launcher.exe`.
+  Archive extraction requires Windows 7-Zip. These packages use Java/JavaFX
+  11.0.2 and have not been execution-tested on Windows.
 * **Linux portable:** extract the archive and run `./filebot.sh` inside its
   application folder. This release requires glibc 2.42+, GTK 3, X11/XWayland,
   and zlib. It includes standalone 7-Zip and rebuilt MediaInfo libraries.
